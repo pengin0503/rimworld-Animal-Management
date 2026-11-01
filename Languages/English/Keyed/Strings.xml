@@ -12,4 +12,7 @@
   <AM_Species>Tightest species: {0} ({1} days; food can be shared)</AM_Species>
   <AM_Partial>Partial scan: more than 12,000 objects.</AM_Partial>
   <AM_Warning>Low stock estimate; grazing can change actual coverage.</AM_Warning>
+  <AM_PenHeader>Pens (today's natural growth / consumption / net nutrition per day):</AM_PenHeader>
+  <AM_PenLine>{0}: {1} / {2} / {3}</AM_PenLine>
+  <AM_MorePens>... and {0} more pens (only first three shown)</AM_MorePens>
 </LanguageData>
