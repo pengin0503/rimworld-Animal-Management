@@ -1,8 +1,13 @@
-# Build and verification / ビルド・検証
+# Build / ビルド
+CI uses the public reference-only package Krafs.Rimworld.Ref 1.7.4985-unstable, not private copyrighted game files.
 
-- Use a matching RimWorld 1.7 game root containing Assembly-CSharp.dll, Waylith.dll and UnityStubs.dll.
-- Run: `dotnet build Source/AnimalManagement.csproj -c Release /p:RimWorldManaged=/path/to/RimWorld`.
-- Generated: `1.7/Assemblies/AnimalManagement.dll` (after successful build).
-- Test with animals that eat different diets; also test zero animals, zero stored food, forbidden food, mixed diets and a 12,000+ object map.
-- Values are upper-bound-like, not strict guarantees, because accessibility, pasture plants and other consumers are not modelled.
-- Do not publish a gameplay-ready release until verified on an actual RimWorld 1.7 instance.
+CI は公開参照アセンブリ Krafs.Rimworld.Ref 1.7.4985-unstable を使い、ゲーム本体のDLLは含めません。
+
+`dotnet build Source/AnimalManagement.csproj -c Release`
+
+To target an exact local game build, pass `-p:RimWorldManaged=/path/to/RimWorld`. The referenced directory must contain Assembly-CSharp.dll, Waylith.dll, UnityStubs.dll.
+
+特定のゲーム本体でビルドする場合、対応するDLLを含むディレクトリを指定してください。
+
+Only publish a game-ready release after manual RimWorld 1.7 runtime and save/reload tests.
+ゲーム内の動作とセーブ・ロードを実際に検証するまでは正式リリースしないでください。
