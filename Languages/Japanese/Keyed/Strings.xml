@@ -12,4 +12,7 @@
   <AM_Species>最も不足しやすい種: {0}（{1}日。他の動物との餌の共有あり）</AM_Species>
   <AM_Partial>一部のみ集計しました（対象オブジェクトが12,000を超過）。</AM_Partial>
   <AM_Warning>備蓄量の推定が少なくなっています。放牧草は未計算です。</AM_Warning>
+  <AM_PenHeader>家畜小屋・放牧地（本日の自然成長 / 消費 / 差分：栄養/日）:</AM_PenHeader>
+  <AM_PenLine>{0}: {1} / {2} / {3}</AM_PenLine>
+  <AM_MorePens>ほかに{0}か所（上位3件のみ表示）</AM_MorePens>
 </LanguageData>
