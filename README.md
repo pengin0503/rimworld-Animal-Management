@@ -8,7 +8,7 @@ RimWorld 1.7の家畜栄養予測MODです。動物種・放牧地ごとの頭�
 
 食性、食料ポリシー、許可エリア、禁止、放牧地、到達性を確認します。確認上限を超えた場合は「不完全」と表示し、未確認の餌を加算しません。出生・死亡は、既存の種構成に比例した成体換算の任意シナリオとして指定できます。
 
-**開発版です。通常プレイ、マップ保存・読み込み、270以上のMOD環境、実スキャン時間・TPSへの影響は未検証です。** 季節予測はバニラの季節別成長推計を使い、季節モデルの氷点下では成長ゼロとします。腐敗、異常気象、飼育者の給餌、消化補正、成長段階の変化は未考慮です。予測の餌割当は実際のAIと異なる場合があります。食料や放牧地を変更したら再計算してください。
+**開発版です。通常プレイ、マップ保存・読み込み、270以上のMOD環境、実スキャン時間・TPSへの影響は未検証です。** 季節予測はバニラの季節別成長推計を使い、季節モデルの氷点下では成長ゼロとします。腐敗期限と摂取者ごとの栄養量を考慮します。異常気象、将来の飼育者の給餌、成長段階の変化は予測条件の変化として扱います。室内飼料は現在の温度管理が維持される前提です。予測の餌割当は実際のAIと異なる場合があります。食料や放牧地を変更したら再計算してください。
 
 ### 利用方法
 
@@ -20,7 +20,7 @@ A RimWorld 1.7 animal nutrition forecasting mod. It shows animal counts and dail
 
 It checks diets, food policies, allowed areas, forbidden state, pen boundaries and reachability. Budget-limited results are labeled incomplete and unverified food is not credited. Optional birth/death scenarios use adult-equivalent demand proportional to existing species composition.
 
-**Development build. Normal gameplay, full-map save/load, 270+ MOD compatibility and actual scan/TPS overhead are unverified.** Seasonal projections use vanilla quadrum growth estimates, set to zero at modeled freezing temperature. Spoilage, unusual weather, handler feeding, digestion modifiers and future life-stage changes are not modeled. Forecast allocation may differ from game AI. Recalculate when food or pens change.
+**Development build. Normal gameplay, full-map save/load, 270+ MOD compatibility and actual scan/TPS overhead are unverified.** Seasonal projections use vanilla quadrum growth estimates, set to zero at modeled freezing temperature. Spoilage deadlines and eater-specific nutrition are modeled. Unusual weather, future handler feeding and life-stage changes invalidate the assumptions; current indoor temperature control is assumed to persist. Forecast allocation may differ from game AI. Recalculate when food or pens change.
 
 ### Usage
 

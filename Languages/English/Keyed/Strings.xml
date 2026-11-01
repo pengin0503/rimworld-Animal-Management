@@ -29,9 +29,13 @@
   <AM_PenProjection>{0}, {1} days: unmet animal nutrition {2}; first deficit {3}</AM_PenProjection>
   <AM_PopulationAt>Day {0}: scenario animal count {1}</AM_PopulationAt>
   <AM_Assumptions>Assumptions: current diets, policies and access persist; humans consume stocks first, then animal allocation favors pasture. Seasonal pen growth uses vanilla quadrum estimates, set to zero at modeled freezing temperature. Existing standing plants are not stocks; unused daily growth is not carried over. Forecast food allocation can differ from game AI. No automatic feeding or slaughter.</AM_Assumptions>
-  <AM_Invalidation>Recalculate after pen/door/area or food policy changes, births/deaths, migration or stock changes. Spoilage, raids, weather anomalies, feeding by handlers, digestion modifiers and future maturation are not modeled. Unpenned grazing is omitted. Estimates remain uncertain, especially when partial.</AM_Invalidation>
+  <AM_Invalidation>Recalculate after pen/door/area or food policy changes, births/deaths, migration or stock changes. Raids, weather anomalies, feeding by handlers and future maturation are not modeled. Unpenned grazing is omitted. Estimates remain uncertain, especially when partial.</AM_Invalidation>
   <AM_Stale>Settings changed or snapshot absent: recalculate.</AM_Stale>
   <AM_Failed>Calculation failed; any earlier snapshot is stale and must not be used as a current forecast.</AM_Failed>
   <AM_Scan>Snapshot tick {0}; calculation {1} ms / {2} access checks (not a TPS measurement)</AM_Scan>
   <AM_NoPopulationBaseline>Birth/death scenario omitted: no existing species population to extrapolate.</AM_NoPopulationBaseline>
+  <AM_Spoilage>Modeled stock nutrition lost to spoilage: {0}</AM_Spoilage>
+  <AM_CoveredDays>Complete modeled stock-only days: {0}{1} (maximum horizon 30)</AM_CoveredDays>
+  <AM_PenProduction>Today natural production {0} nutrition/day; net {1}</AM_PenProduction>
+  <AM_NutritionAssumptions>Stocks use the minimum eater-specific nutrition among verified consumers. Spoilage uses seasonal outdoor temperature or maintained current room temperature; food expiring during a day is conservatively excluded for that day. Temperature control failure, processing and future handler deliveries invalidate the projection.</AM_NutritionAssumptions>
 </LanguageData>

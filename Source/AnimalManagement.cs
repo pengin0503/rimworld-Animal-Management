@@ -36,6 +36,7 @@ namespace Pengin.AnimalManagement
     public sealed class FeedForecast : MapComponent
     {
         const int MaxObjects=12000, MaxAccessChecks=2000, MaxConsumers=400;
+        float[] futureTemperatures=new float[30];
         public ForecastSnapshot Snapshot {get;private set;} = new ForecastSnapshot();
         public double ScanMilliseconds {get;private set;}
         public bool Failed {get;private set;}
@@ -52,9 +53,29 @@ namespace Pengin.AnimalManagement
             catch(Exception e){if(!Failed)Log.Warning("Animal Management forecast incomplete: "+e.GetType().Name);Failed=true;}
             finally{ScanMilliseconds=timer.Elapsed.TotalMilliseconds;}
         }
+        int LastFreshDay(Thing item)
+        {
+            CompRottable rot=item.TryGetComp<CompRottable>();
+            if(rot==null)return int.MaxValue;
+            Room room=item.GetRoom();bool outdoor=room==null||room.UsesOutdoorTemperature;
+            double remainingFraction=1;
+            for(int day=1;day<=30;day++)
+            {
+                float temp=outdoor?(day==1?Math.Max(item.AmbientTemperature,futureTemperatures[0]):futureTemperatures[day-1]):item.AmbientTemperature;
+                int ticks=rot.TicksUntilRotAtTemp(temp);
+                if(ticks<=0)return day-1;
+                if(ticks==int.MaxValue)continue;
+                remainingFraction-=60000.0/ticks;
+                if(remainingFraction<=0)return day-1; // Do not bank food that spoils during that day.
+            }
+            return int.MaxValue;
+        }
         ForecastSnapshot Calculate()
         {
             var settings=AnimalManagementMod.Settings;
+            int climateStart=Find.TickManager.TicksAbs;
+            for(int d=0;d<30;d++)futureTemperatures[d]=GenTemperature.GetTemperatureFromSeasonAtTile(
+                (int)Math.Min(int.MaxValue,(long)climateStart+d*60000L),map.Tile);
             var result=new ForecastSnapshot {Tick=Find.TickManager.TicksGame,SettingsSignature=settings.Signature};
             var all=map.mapPawns.AllPawnsSpawned.Where(p=>!p.Dead&&p.needs!=null&&p.needs.food!=null&&
                 (p.IsColonyAnimal || (p.RaceProps.Humanlike&&(p.Faction==Faction.OfPlayer||p.IsPrisonerOfColony)))).ToList();
@@ -92,6 +113,7 @@ namespace Pengin.AnimalManagement
                 if(item is Pawn||item is Plant||item.def==null||!item.def.IsNutritionGivingIngestible||!item.IngestibleNow)continue;
                 if(!settings.IncludeForbidden&&item.IsForbidden(Faction.OfPlayer))continue;
                 double perItem=item.GetStatValue(StatDefOf.Nutrition);
+                double conservativeNutrition=double.PositiveInfinity;
                 if(double.IsNaN(perItem)||double.IsInfinity(perItem)||perItem<=0||item.stackCount<=0)continue;
                 var access=new bool[all.Count];
                 for(int a=0;a<all.Count;a++)
@@ -105,13 +127,18 @@ namespace Pengin.AnimalManagement
                     if(!FoodUtility.WillEat(pawn,item,pawn))continue;
                     // Downed animals cannot independently reach feed; delivery is not assumed.
                     if(pawn.Downed||!pawn.CanReach(item,PathEndMode.Touch,Danger.None))continue;
+                    double nutrition=FoodUtility.NutritionForEater(pawn,item);
+                    if(double.IsNaN(nutrition)||double.IsInfinity(nutrition)||nutrition<=0){result.Partial=true;continue;}
+                    conservativeNutrition=Math.Min(conservativeNutrition,nutrition);
                     access[a]=true;
                 }
                 if(!access.Any(x=>x))continue;
-                string key=new string(access.Select(x=>x?'1':'0').ToArray());
+                perItem=conservativeNutrition;
+                int expiry=LastFreshDay(item);
+                string key=new string(access.Select(x=>x?'1':'0').ToArray())+":"+expiry;
                 FeedPool pool;
                 if(!byAccess.TryGetValue(key,out pool))
-                {pool=new FeedPool{Access=access};byAccess[key]=pool;stock.Add(pool);}
+                {pool=new FeedPool{Access=access,LastFreshDay=expiry};byAccess[key]=pool;stock.Add(pool);}
                 pool.Nutrition+=perItem*item.stackCount;
                 result.FeedStacks++;result.StockNutrition+=perItem*item.stackCount;
             }
@@ -128,7 +155,7 @@ namespace Pengin.AnimalManagement
                 var growth=new List<FeedPool>();
                 long future=(long)abs+(day-1)*60000L;
                 Quadrum quadrum=GenDate.Quadrum(future,longitude);
-                bool frozen=GenTemperature.GetTemperatureFromSeasonAtTile((int)Math.Min(int.MaxValue,future),map.Tile)<=0;
+                bool frozen=futureTemperatures[day-1]<=0;
                 foreach(CompAnimalPenMarker pen in pens)
                 {
                     PenFoodCalculator calc=pen.PenFoodCalculator;
@@ -136,7 +163,7 @@ namespace Pengin.AnimalManagement
                     if(double.IsNaN(amount)||double.IsInfinity(amount)||amount<0){result.Partial=true;continue;}
                     var access=new bool[all.Count];
                     for(int a=0;a<all.Count;a++)access[a]=penOf[a]==pen&&
-                        all[a].RaceProps.CanEverEat(ThingDefOf.Plant_Grass)&&!all[a].Downed;
+                        all[a].RaceProps.CanEverEat(ThingDefOf.Plant_Grass)&&FoodUtility.WillEat(all[a],ThingDefOf.Plant_Grass,all[a])&&!all[a].Downed;
                     growth.Add(new FeedPool{Nutrition=amount,Pasture=true,Access=access});
                 }
                 growthByDay[day]=growth;
@@ -145,7 +172,9 @@ namespace Pengin.AnimalManagement
             {
                 int count=Enumerable.Range(0,all.Count).Count(a=>penOf[a]==pen);
                 double demand=Enumerable.Range(0,all.Count).Where(a=>penOf[a]==pen).Sum(a=>demands[a].Daily);
+                double produced=pen.PenFoodCalculator.NutritionPerDayToday;
                 result.Lines.Add("AM_PenPopulation".Translate(pen.parent.LabelShort,count,demand.ToString("0.00")));
+                result.Lines.Add("AM_PenProduction".Translate(produced.ToString("0.00"),(produced-demand).ToString("+0.00;-0.00;0.00")));
                 foreach(var species in Enumerable.Range(0,all.Count).Where(a=>penOf[a]==pen).GroupBy(a=>all[a].def))
                     result.Lines.Add("AM_PenSpecies".Translate(pen.parent.LabelShort,species.Key.LabelCap,
                         species.Count(),species.Sum(a=>demands[a].Daily).ToString("0.00")));
@@ -160,6 +189,7 @@ namespace Pengin.AnimalManagement
                 string shortage=p.FirstShortageDay==0?"AM_NoShortage".Translate().ToString():"AM_ShortageDay".Translate(p.FirstShortageDay).ToString();
                 result.Lines.Add("AM_Projection".Translate(horizon,shortage,p.StockConsumed.ToString("0.0"),
                     p.PastureConsumed.ToString("0.0"),p.Unmet.Sum().ToString("0.0")));
+                result.Lines.Add("AM_Spoilage".Translate(p.SpoiledNutrition.ToString("0.0")));
                 foreach(CompAnimalPenMarker pen in pens)
                 {
                     double deficit=Enumerable.Range(0,all.Count).Where(a=>penOf[a]==pen).Sum(a=>p.Unmet[a]);
@@ -207,11 +237,13 @@ namespace Pengin.AnimalManagement
                 list.Label("AM_Stock".Translate(s.StockNutrition.ToString("0.0"),s.FeedStacks));
                 if(s.StockOnly!=null)
                 {
+                    list.Label("AM_CoveredDays".Translate(s.StockOnly.CoveredWholeDays,s.StockOnly.FirstShortageDay==0?"+":""));
                     list.Label("AM_StockShortage".Translate(s.StockOnly.FirstShortageDay==0?"AM_NoShortage".Translate().ToString():"AM_ShortageDay".Translate(s.StockOnly.FirstShortageDay).ToString()));
                     if(s.StockOnly.FirstShortageDay>0&&s.StockOnly.FirstShortageDay<=Settings.WarnDays)list.Label("AM_Warning".Translate());
                 }
                 if(s.Partial)list.Label("AM_Partial".Translate());
                 list.Label("AM_Assumptions".Translate());
+                list.Label("AM_NutritionAssumptions".Translate());
                 foreach(string line in s.Lines)list.Label(line);
                 list.Label("AM_Invalidation".Translate());
                 list.Label("AM_Scan".Translate(s.Tick,f.ScanMilliseconds.ToString("0.00"),s.AccessChecks));
