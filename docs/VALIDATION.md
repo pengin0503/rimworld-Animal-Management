@@ -144,3 +144,4 @@ Review follow-up (PR #16):
 - Staged preference now opens source capacity stage by stage inside one residual graph. Later stages can reroute earlier pasture/meal flow, so a preference never creates a deficit that a single max-flow would avoid. Two regression assertions were added.
 - The feed alert switches to an affected map before opening the window when the current map is not affected.
 - The bounded real-game probe was re-run with identical results.
+- Animals with zero modeled demand (excluded grazers) no longer count as consumers of a pool when deciding which food humans eat first. One more regression assertion was added (26 in total).

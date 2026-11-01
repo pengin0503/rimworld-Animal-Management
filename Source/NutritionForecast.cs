@@ -55,7 +55,9 @@ namespace Pengin.AnimalManagement
             var output=new Projection[horizons.Length];
             int animals=demands.Count(d=>!d.Human);
             if(animals==0&&(births>0||deaths>0))throw new ArgumentException("Population scenario requires a species baseline");
-            bool[] animal=demands.Select(d=>!d.Human).ToArray();
+            // Only animals with modeled demand make food "shared"; excluded consumers (demand 0,
+            // e.g. grazers outside pens) must not push humans onto feed animals need.
+            bool[] animal=demands.Select(d=>!d.Human&&d.Daily>Epsilon).ToArray();
             int last=horizons.Max();
             for(int day=1;day<=last;day++)
             {

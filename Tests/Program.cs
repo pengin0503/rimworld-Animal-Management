@@ -61,6 +61,9 @@ static class Program
         Check(r.FirstShortageDay==0&&r.PastureConsumed==1&&r.StockConsumed==1,"later stages reroute earlier pasture flow");
         r=NutritionForecast.Run(new List<Demand>{D(1,true),D(1,true)},new List<FeedPool>{F(1,true,true),F(1,false,true)},None,1,0,0);
         Check(r.FirstShortageDay==0,"human stages reroute as well");
+        // An excluded (zero-demand) animal does not make a pool "animal feed" for the human stage.
+        r=NutritionForecast.Run(new List<Demand>{D(1,true),D(1),D(0)},new List<FeedPool>{F(1,true,true,false),F(1,true,false,true)},None,1,0,0);
+        Check(r.FirstShortageDay==0,"zero-demand animals do not block the human-first stage");
         var multi=NutritionForecast.Run(d,new List<FeedPool>{F(20,true,true)},None,new[]{7,15,30},0,0);
         var single=NutritionForecast.Run(d,new List<FeedPool>{F(20,true,true)},None,15,0,0);
         Check(multi[1].FirstShortageDay==single.FirstShortageDay&&Math.Abs(multi[1].StockConsumed-single.StockConsumed)<1e-9&&multi[0].Horizon==7&&multi[2].CoveredWholeDays==single.CoveredWholeDays,"one simulation serves every horizon");
