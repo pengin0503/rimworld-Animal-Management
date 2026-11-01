@@ -22,6 +22,9 @@ static class Program
         Check(r.FirstShortageDays[0]==0 && r.FirstShortageDays[1]==1,"per-consumer shortage dates are independent");
         r=NutritionForecast.Run(new List<Demand>{D(1,true),D(1)},new List<FeedPool>{F(2,true,true)},None,2,0,0);
         Check(r.FirstShortageDay==2 && r.HumanStockConsumed==1,"human consumption competes once");
+        Check(r.FirstAnimalShortageDay==2,"animal shortage caused by human competition is reported");
+        r=NutritionForecast.Run(new List<Demand>{D(1,true),D(1)},new List<FeedPool>{F(10,false,true)},None,7,0,0);
+        Check(r.FirstShortageDay==1 && r.FirstAnimalShortageDay==0,"human-only deficit does not raise an animal feed shortage");
         r=NutritionForecast.Run(d,new List<FeedPool>{F(100,false,false)},None,1,0,0);
         Check(r.FirstShortageDay==1 && r.StockConsumed==0,"inaccessible feed remains unavailable");
         r=NutritionForecast.Run(new List<Demand>{D(1)},new List<FeedPool>(), day => new List<FeedPool>{new FeedPool{Nutrition=day<3?1:0,Pasture=true,Access=new[]{true}}},7,0,0);

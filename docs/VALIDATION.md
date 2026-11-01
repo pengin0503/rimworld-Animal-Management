@@ -68,3 +68,27 @@ Scans run every 10,000 game ticks with a 12,000-object / 2,000-access-check limi
 Stock pools now retain a conservative last-fresh day, with current rot progress projected across seasonal outdoor temperatures or maintained current indoor temperature. Food that spoils during a modeled day is excluded from that day; leftovers are expired once, not re-counted as consumed. Stocks with different lifetimes are not combined. Eater-specific FoodUtility nutrition is evaluated for verified consumers; the minimum is used for a shared pool, avoiding optimistic genotype/raw-food conversion. Pasture access also checks food policy.
 
 Added modeled whole covered days (30-day horizon), spoilage loss, current natural pen production and daily net balance. The 30-day climate vector is calculated once per snapshot. Existing forecast assertions plus one expiry regression pass; exact-DLL Release build and translation checks pass. No broad new test suite or populated-game acceptance was run. Delivery, weather events and changed temperature control remain explicit invalidation conditions rather than automatic animal-management actions. Historical runtime evidence does not cover new production bytes.
+
+## v1.0.0 release checks (2026-11-01)
+
+Fixes made during release review (code review only; no new gameplay run):
+
+- The stock-only warning and shortage day previously included human demand. A colonist food deficit could therefore raise an animal feed warning even when animal feed was sufficient. `Projection.FirstAnimalShortageDay` now tracks animal demand only and drives the warning. The combined first deficit stays visible and labeled. Human competition is still allocated first, so an animal shortage caused by human consumption is still reported.
+- Settings panel tolerates a missing map component.
+
+Checks performed:
+
+- 19 model assertions pass (two new).
+- `validate_package.py` passes.
+- Release build has 0 warnings and 0 errors against the exact private 1.7.4985 rev1269 DLLs.
+- Release build with `Krafs.Rimworld.Ref 1.7.4985-unstable` also has 0 warnings and 0 errors.
+- Static reference check of the public-reference DLL: 94 members and 63 types matched, 0 mismatches. The 175 unverified references are BCL only.
+
+Release-review findings that are not blocking:
+
+- Shared stocks are allocated once by max-flow.
+- Unchecked access and budget overflow are not credited.
+- Spoilage, freezing and the daily expiry of pasture growth are modeled.
+- Maps are independent.
+
+Still unverified, and not claimed: normal populated gameplay, full-map save/load, actual feeding behavior, large-map calculation time/TPS and compatibility with large mod lists. The earlier A-level and 12,000-tick evidence was produced on earlier DLL bytes.

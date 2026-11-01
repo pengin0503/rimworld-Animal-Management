@@ -4,5 +4,8 @@
   <author>pengin0503</author>
   <packageId>pengin0503.animalmanagement</packageId>
   <supportedVersions><li>1.7</li></supportedVersions>
-  <description>Animal feeding and stored nutrition forecast. Experimental development build; not verified in game.</description>
+  <modVersion>1.0.0</modVersion>
+  <description>Shows livestock counts and daily nutrition demand by species and pen, stored feed shared with colonists, spoilage, seasonal pasture growth and conditional 7/15/30-day feed forecasts with stated assumptions. Forecasts are estimates, not guarantees. Information only: no automatic feeding, slaughter or setting changes.
+
+家畜の頭数・日次栄養需要、入植者と共有する備蓄飼料、腐敗、季節ごとの放牧地の成長を表示し、前提条件付きで7・15・30日の飼料収支を予測します。予測は推定です。自動給餌・自動屠殺・設定変更は行いません。</description>
 </ModMetaData>

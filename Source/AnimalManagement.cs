@@ -227,6 +227,7 @@ namespace Pengin.AnimalManagement
             if(current!=null)
             {
                 FeedForecast f=current.GetComponent<FeedForecast>();
+                if(f==null){list.Label("AM_NoMap".Translate());contentHeight=list.CurHeight+20;list.End();Widgets.EndScrollView();return;}
                 if(list.ButtonText("AM_Refresh".Translate()))f.Recalculate();
                 ForecastSnapshot s=f.Snapshot;
                 if(f.Failed)list.Label("AM_Failed".Translate());
@@ -239,7 +240,9 @@ namespace Pengin.AnimalManagement
                 {
                     list.Label("AM_CoveredDays".Translate(s.StockOnly.CoveredWholeDays,s.StockOnly.FirstShortageDay==0?"+":""));
                     list.Label("AM_StockShortage".Translate(s.StockOnly.FirstShortageDay==0?"AM_NoShortage".Translate().ToString():"AM_ShortageDay".Translate(s.StockOnly.FirstShortageDay).ToString()));
-                    if(s.StockOnly.FirstShortageDay>0&&s.StockOnly.FirstShortageDay<=Settings.WarnDays)list.Label("AM_Warning".Translate());
+                    int animalDay=s.StockOnly.FirstAnimalShortageDay;
+                    list.Label("AM_AnimalStockShortage".Translate(animalDay==0?"AM_NoShortage".Translate().ToString():"AM_ShortageDay".Translate(animalDay).ToString()));
+                    if(animalDay>0&&animalDay<=Settings.WarnDays)list.Label("AM_Warning".Translate());
                 }
                 if(s.Partial)list.Label("AM_Partial".Translate());
                 list.Label("AM_Assumptions".Translate());
