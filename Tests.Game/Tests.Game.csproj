@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <Reference Include="com.rlabrecque.steamworks.net"><HintPath>$(GameExtraManaged)/com.rlabrecque.steamworks.net.dll</HintPath></Reference>
+    <Reference Include="Microsoft.Extensions.ObjectPool"><HintPath>$(GameExtraManaged)/Microsoft.Extensions.ObjectPool.dll</HintPath></Reference>
+    <ProjectReference Include="../Source/AnimalManagement.csproj"/>
+    <Reference Include="Assembly-CSharp"><HintPath>$(RimWorldManaged)/Assembly-CSharp.dll</HintPath></Reference>
+    <Reference Include="Waylith"><HintPath>$(RimWorldManaged)/Waylith.dll</HintPath></Reference>
+    <Reference Include="UnityStubs"><HintPath>$(RimWorldManaged)/UnityStubs.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

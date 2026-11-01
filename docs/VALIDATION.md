@@ -37,10 +37,28 @@ Scans run every 10,000 game ticks with a 12,000-object / 2,000-access-check limi
 
 ### Not verified / 正式版までの未確認項目
 
-- No newly qualified A load, generated map, finite game ticks, real feeding, UI layout, full-map save/load, mid-save addition/removal, migration/pen changes or 270+ MOD run was performed for this DLL.
-- Full WaylithClr host execution is still required. Direct stock-CLR Scribe integration in the preceding MOD failed due to game logging/ObjectPool binding requirements; that failure is not a successful save/load test for this MOD.
+- At the initial checkpoint, new A/map/tick checks had not run. The final evidence below updates those scopes; real feeding, UI, full-map save/load, mid-save addition/removal, migration/pen changes and 270+ MOD acceptance remain unverified.
+- Full WaylithClr host execution is still required. The initial direct Scribe attempt failed on missing game dependencies/uninitialized prefs; final primitive settings integration below now passes. It is not a whole-map save/load test.
 - Spoilage, weather events, handler feeding, food digestion modifiers, food processing, maturation, inventories/containers and off-pen grazing are outside the current model. Seasonal growth/access/competition adapters need real-game acceptance; model tests alone do not prove no optimistic estimate.
 - Actual large-map scan time, allocations and TPS impact remain unmeasured. `ScanMilliseconds` exposes an end-to-end measurement when running in-game; no value is invented here.
 - Self-review only, no subagents. Fixed missing population baseline, per-consumer shortage dates, duplicate pen growth and transactional snapshot failures. Issue #1 remains open. No v1.0 release.
 
 日本語: 共有在庫を一度だけ割り当てる予測、食性・アクセスの確認、放牧地の季節別成長、7/15/30日の不足と放牧地別内訳、任意の出生死亡シナリオ、前提・不確実性表示を追加しました。実物DLL参照ビルドと16項目のモデル検証・日英キー・開発版パッケージは合格しました。ただし実マップ、給餌、保存と読み込み、途中導入・削除、270以上のMOD、実スキャン時間・TPSは未検証です。腐敗や異常気象等は未モデル化で、表示する餌割当も実AIとは異なり得ます。正式版にはしません。
+
+## Final private-runtime evidence (2026-11-01)
+
+- [Pinned private-host run](https://github.com/pengin0503/RimWorld-for-mod-test/actions/runs/41278778403) completed successfully. Only safe rebuilt summaries were printed; raw game files, saves and private logs were not published.
+- Fresh qualified **A=passed**, exit 0, no reason codes, for the source revision in [runtime-smoke.json](evidence/2026-11-01-runtime-smoke.json).
+- Generated-map finite-tick smoke: actual game tick and independent registered `fixture.counter` both equal **0, 60, 600, 12,000**. **D stage=completed**, but **overall=incomplete** with `experimental`, `dNotQualified`, `mapNotQualified`. The host CI success means these limited expectations were met; it is not promotion to qualified D or game feature acceptance. No new errors/warnings were reported by that comparison.
+- The registered observer measures its fixture counter, not our work diagnosis, feed accuracy, apparel effects or scan timing. The fixture map and Core/Japanese conditions do not represent a populated or 270+ MOD colony. No TPS claim is made.
+- Local model benchmark conditions: Linux x86_64, AMD EPYC 9V74, 9 logical CPUs exposed, SDK 10.0.111 / .NET 10.0.11, Release, single-run measurements with game API/GUI/pathfinding excluded. No before/after optimization claim.
+
+### Primitive Scribe integration
+
+`dotnet run --project Tests.Game/Tests.Game.csproj -c Release -p:RimWorldManaged=<matching-private-game-dir> -p:GameExtraManaged=<matching-private-extra-dir>` exercises the real game Scribe under stock .NET for isolated primitive data. The extra directory contains only matching R2 ObjectPool and Steamworks managed dependencies. The fixture supplies the game's real default `PrefsData` because normal engine startup is absent. These files are test inputs only and are never committed or packaged.
+
+**PASS:** WarnDays, IncludeForbidden, PopulationScenario, Births and Deaths settings round trip. Forecast snapshots are recomputed rather than serialized. This does not verify map transitions or actual feeding. Static index comparison: 86 member signatures and 60 types matched; 170 external-framework references remain outside the indexed assembly set, with no indexed game-reference mismatch.
+
+**Still blocked for v1.0:** normal populated gameplay, full-map save/load and installation/removal, actual task/feeding/wear acceptance, real outfit-manager/race/DLC interactions, 270+ MOD compatibility and actual large-map scan/TPS measurement. Earlier implementation gaps and scenario limitations remain; Issue #1 is open and no v1.0 release is created.
+
+日本語: 最新コミットで実ゲーム読み込みAは合格し、実ゲームTickと独立fixtureが12,000 Tickまで一致しました。ただしD・マップ生成は未適格化で総合判定はincompleteです。実物Scribeによる限定的なデータ往復も合格しましたが、通常プレイやマップ全体の保存・読み込み、実際の業務動作、270以上のMOD環境・実TPSの検証にはなりません。Issue #1と正式版の保留を維持します。
