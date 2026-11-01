@@ -5,22 +5,35 @@ using System.Linq;
 namespace Pengin.AnimalManagement
 {
     public sealed class Demand { public double Daily; public bool Human; }
-    public sealed class FeedPool { public double Nutrition; public bool[] Access; public bool Pasture; public int LastFreshDay=int.MaxValue; }
+    // Pasture: today's natural growth, expires daily. Standing: plants already growing in a
+    // pen, eaten once and not replenished. Neither is ever available to humans.
+    public sealed class FeedPool { public double Nutrition; public bool[] Access; public bool Pasture, Standing; public int LastFreshDay=int.MaxValue; }
     public sealed class Projection
     {
+        public int Horizon;
         public int FirstShortageDay;
-        // Animal-only: a human food deficit is reported separately and must not raise feed warnings.
-        public int FirstAnimalShortageDay;
         public int[] FirstShortageDays;
-        public double StockConsumed, HumanStockConsumed, PastureConsumed, FinalAnimalCount;
+        public double StockConsumed, HumanStockConsumed, PastureConsumed, StandingConsumed, FinalAnimalCount;
         public double SpoiledNutrition;
         public int CoveredWholeDays;
         public double[] Unmet;
+        // Animal-only: a human food deficit is reported separately and must not raise feed warnings.
+        public int FirstAnimalShortageDay;
+        public Projection Clone(int horizon)
+        {
+            var p=(Projection)MemberwiseClone();
+            p.Horizon=horizon;
+            p.FirstShortageDays=(int[])FirstShortageDays.Clone();
+            p.Unmet=(double[])Unmet.Clone();
+            p.CoveredWholeDays=FirstShortageDay==0?horizon:FirstShortageDay-1;
+            return p;
+        }
     }
 
     // Nutrition-only scenario, not an assertion about the game's actual feeding order.
-    // Each edge carries nutrition once. Human demand is allocated first; unused pasture
-    // expires daily so today's modeled regrowth cannot inflate future stored feed.
+    // Each edge carries nutrition once. Feeding order is staged and stated in the UI:
+    // humans eat food animals cannot use first, then shared food; animals eat today's
+    // pasture first (it expires), then standing pen plants, then stored feed.
     public static class NutritionForecast
     {
         const double Epsilon=1e-7;
@@ -28,13 +41,23 @@ namespace Pengin.AnimalManagement
         public static Projection Run(IList<Demand> demands,IList<FeedPool> stocks,
             Func<int,List<FeedPool>> growth,int horizon,int births,int deaths)
         {
-            if(horizon<1||horizon>30||births<0||deaths<0)throw new ArgumentException("Invalid scenario");
+            return Run(demands,stocks,growth,new[]{horizon},births,deaths)[0];
+        }
+        // One simulation serves every requested horizon: the first N days do not depend
+        // on how many days follow, so shorter horizons are prefixes of the longest one.
+        public static Projection[] Run(IList<Demand> demands,IList<FeedPool> stocks,
+            Func<int,List<FeedPool>> growth,int[] horizons,int births,int deaths)
+        {
+            if(horizons==null||horizons.Length==0||horizons.Any(h=>h<1||h>30)||births<0||deaths<0)throw new ArgumentException("Invalid scenario");
             if(demands.Any(d=>d==null||!Valid(d.Daily)))throw new ArgumentException("Invalid demand");
             var stock=stocks.Select(p=>Copy(p,demands.Count)).ToList();
             var result=new Projection {Unmet=new double[demands.Count],FirstShortageDays=new int[demands.Count]};
+            var output=new Projection[horizons.Length];
             int animals=demands.Count(d=>!d.Human);
             if(animals==0&&(births>0||deaths>0))throw new ArgumentException("Population scenario requires a species baseline");
-            for(int day=1;day<=horizon;day++)
+            bool[] animal=demands.Select(d=>!d.Human).ToArray();
+            int last=horizons.Max();
+            for(int day=1;day<=last;day++)
             {
                 foreach(FeedPool pool in stock)
                     if(day>pool.LastFreshDay){result.SpoiledNutrition+=pool.Nutrition;pool.Nutrition=0;}
@@ -43,9 +66,11 @@ namespace Pengin.AnimalManagement
                 result.FinalAnimalCount=count;
                 var pools=growth(day).Select(p=>Copy(p,demands.Count)).Where(p=>p.Pasture).Concat(stock).ToList();
                 double[] need=demands.Select(d=>d.Daily*(d.Human?1:scale)).ToArray();
-                // An explicit conservative feeding-order assumption, visible in the UI.
-                Allocate(pools,demands,need,true,result);
-                Allocate(pools,demands,need,false,result);
+                Allocate(pools,demands,need,true,result,p=>!AnyAccess(p,animal));
+                Allocate(pools,demands,need,true,result,p=>true);
+                Allocate(pools,demands,need,false,result,p=>p.Pasture);
+                Allocate(pools,demands,need,false,result,p=>p.Standing);
+                Allocate(pools,demands,need,false,result,p=>true);
                 for(int i=0;i<need.Length;i++)
                 {
                     result.Unmet[i]+=need[i];
@@ -56,15 +81,20 @@ namespace Pengin.AnimalManagement
                         if(result.FirstShortageDays[i]==0)result.FirstShortageDays[i]=day;
                     }
                 }
+                for(int h=0;h<horizons.Length;h++)if(horizons[h]==day)output[h]=result.Clone(day);
             }
-            result.CoveredWholeDays=result.FirstShortageDay==0?horizon:result.FirstShortageDay-1;
-            return result;
+            return output;
+        }
+        static bool AnyAccess(FeedPool pool,bool[] who)
+        {
+            for(int i=0;i<who.Length;i++)if(who[i]&&pool.Access[i])return true;
+            return false;
         }
         static FeedPool Copy(FeedPool p,int count)
         {
             if(p==null||!Valid(p.Nutrition)||p.Access==null||p.Access.Length!=count)
                 throw new ArgumentException("Invalid feed pool");
-            return new FeedPool{Nutrition=p.Nutrition,Access=p.Access,Pasture=p.Pasture,LastFreshDay=p.LastFreshDay};
+            return new FeedPool{Nutrition=p.Nutrition,Access=p.Access,Pasture=p.Pasture,Standing=p.Standing,LastFreshDay=p.LastFreshDay};
         }
         sealed class Edge {public int To,Reverse;public double Capacity;}
         static Edge Add(List<Edge>[] graph,int a,int b,double capacity)
@@ -74,16 +104,20 @@ namespace Pengin.AnimalManagement
             graph[b].Add(new Edge{To=a,Reverse=graph[a].Count-1,Capacity=0});
             return edge;
         }
-        static void Allocate(List<FeedPool> pools,IList<Demand> demands,double[] need,bool humans,Projection result)
+        static void Allocate(List<FeedPool> pools,IList<Demand> demands,double[] need,bool humans,Projection result,Func<FeedPool,bool> include)
         {
+            bool anyNeed=false;
+            for(int a=0;a<demands.Count;a++)if(demands[a].Human==humans&&need[a]>Epsilon){anyNeed=true;break;}
+            if(!anyNeed)return;
             int sink=pools.Count+demands.Count+1;
             var graph=new List<Edge>[sink+1];for(int i=0;i<graph.Length;i++)graph[i]=new List<Edge>();
             var sourceEdges=new Edge[pools.Count];var sinkEdges=new Edge[demands.Count];
             for(int p=0;p<pools.Count;p++)
             {
                 FeedPool pool=pools[p];
-                sourceEdges[p]=Add(graph,0,p+1,pool.Nutrition);
-                if(humans&&pool.Pasture)continue;
+                bool usable=pool.Nutrition>Epsilon&&include(pool)&&!(humans&&(pool.Pasture||pool.Standing));
+                sourceEdges[p]=Add(graph,0,p+1,usable?pool.Nutrition:0);
+                if(!usable)continue;
                 for(int a=0;a<demands.Count;a++)
                     if(demands[a].Human==humans&&pool.Access[a]&&need[a]>Epsilon)
                         Add(graph,p+1,pools.Count+a+1,pool.Nutrition);
@@ -106,9 +140,14 @@ namespace Pengin.AnimalManagement
             }
             for(int p=0;p<pools.Count;p++)
             {
-                double consumed=Math.Max(0,pools[p].Nutrition-sourceEdges[p].Capacity);
-                pools[p].Nutrition=sourceEdges[p].Capacity;
+                if(!(pools[p].Nutrition>Epsilon))continue;
+                double offered=sourceEdges[p].Capacity;
+                bool usable=include(pools[p])&&!(humans&&(pools[p].Pasture||pools[p].Standing));
+                if(!usable)continue;
+                double consumed=Math.Max(0,pools[p].Nutrition-offered);
+                pools[p].Nutrition=offered;
                 if(pools[p].Pasture)result.PastureConsumed+=consumed;
+                else if(pools[p].Standing)result.StandingConsumed+=consumed;
                 else {result.StockConsumed+=consumed;if(humans)result.HumanStockConsumed+=consumed;}
             }
             for(int a=0;a<need.Length;a++)if(sinkEdges[a]!=null)need[a]=Math.Max(0,sinkEdges[a].Capacity);

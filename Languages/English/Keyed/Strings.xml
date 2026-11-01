@@ -6,12 +6,12 @@
   <AM_NoMap>Select a colony map.</AM_NoMap>
   <AM_Refresh>Recalculate</AM_Refresh>
   <AM_Animals>Colony animals: {0}</AM_Animals>
-  <AM_Demand>Nutrition demand per day: {0}</AM_Demand>
+  <AM_Demand>Animal nutrition demand per day (fed rate): {0}</AM_Demand>
   <AM_Stock>Verified consumable stocks for animals and humans: {0} nutrition ({1} stacks)</AM_Stock>
   <AM_Coverage>Stock-only coverage (days): {0}</AM_Coverage>
   <AM_Species>Tightest species: {0} ({1} days; food can be shared)</AM_Species>
   <AM_Partial>Incomplete: object/access budget exceeded or invalid growth data. Omitted feed is not credited. Do not treat projections as complete.</AM_Partial>
-  <AM_Warning>Low animal feed stock estimate; grazing can change actual coverage.</AM_Warning>
+  <AM_Warning>Animal feed shortage predicted within the warning threshold (estimate).</AM_Warning>
   <AM_PenHeader>Pens (today's natural growth / consumption / net nutrition per day):</AM_PenHeader>
   <AM_PenLine>{0}: {1} / {2} / {3}</AM_PenLine>
   <AM_MorePens>... and {0} more pens (only first three shown)</AM_MorePens>
@@ -26,11 +26,11 @@
   <AM_SpeciesLine>{0}: {1} animals / {2} nutrition per day</AM_SpeciesLine>
   <AM_PenPopulation>Pen {0}: {1} animals / {2} nutrition per day</AM_PenPopulation>
   <AM_PenSpecies>{0} / {1}: {2} animals / {3} nutrition per day</AM_PenSpecies>
-  <AM_Projection>{0}-day scenario: {1}; stocks consumed {2}, pasture consumed {3}, unmet nutrition {4} (including humans)</AM_Projection>
+  <AM_Projection>{0}-day scenario: {1}; stocks consumed {2}, pasture and standing plants consumed {3}, unmet nutrition {4} (including humans)</AM_Projection>
   <AM_PenProjection>{0}, {1} days: unmet animal nutrition {2}; first deficit {3}</AM_PenProjection>
   <AM_PopulationAt>Day {0}: scenario animal count {1}</AM_PopulationAt>
-  <AM_Assumptions>Assumptions: current diets, policies and access persist; humans consume stocks first, then animal allocation favors pasture. Seasonal pen growth uses vanilla quadrum estimates, set to zero at modeled freezing temperature. Existing standing plants are not stocks; unused daily growth is not carried over. Forecast food allocation can differ from game AI. No automatic feeding or slaughter.</AM_Assumptions>
-  <AM_Invalidation>Recalculate after pen/door/area or food policy changes, births/deaths, migration or stock changes. Raids, weather anomalies, feeding by handlers and future maturation are not modeled. Unpenned grazing is omitted. Estimates remain uncertain, especially when partial.</AM_Invalidation>
+  <AM_Assumptions>Assumptions: current diets, policies and access persist. Feeding order is staged: humans first eat food animals cannot use, then shared food; animals eat today's pen growth first, then plants already standing in the pen, then stored feed. Seasonal pen growth uses vanilla quadrum estimates, set to zero at modeled freezing temperature; unused daily growth is not carried over and standing plants are not replenished. Forecast allocation can differ from game AI. No automatic feeding or slaughter.</AM_Assumptions>
+  <AM_Invalidation>Recalculate after pen/door/area or food policy changes, births/deaths, migration or stock changes. Raids, weather anomalies, handler feeding of animals and future maturation are not modeled. Grazers outside pens are excluded from the forecast. Estimates remain uncertain, especially when partial.</AM_Invalidation>
   <AM_Stale>Settings changed or snapshot absent: recalculate.</AM_Stale>
   <AM_Failed>Calculation failed; any earlier snapshot is stale and must not be used as a current forecast.</AM_Failed>
   <AM_Scan>Snapshot tick {0}; calculation {1} ms / {2} access checks (not a TPS measurement)</AM_Scan>
@@ -38,5 +38,16 @@
   <AM_Spoilage>Modeled stock nutrition lost to spoilage: {0}</AM_Spoilage>
   <AM_CoveredDays>Complete modeled stock-only days: {0}{1} (maximum horizon 30)</AM_CoveredDays>
   <AM_PenProduction>Today natural production {0} nutrition/day; net {1}</AM_PenProduction>
-  <AM_NutritionAssumptions>Stocks use the minimum eater-specific nutrition among verified consumers. Spoilage uses seasonal outdoor temperature or maintained current room temperature; food expiring during a day is conservatively excluded for that day. Temperature control failure, processing and future handler deliveries invalidate the projection.</AM_NutritionAssumptions>
+  <AM_NutritionAssumptions>Demand uses each pawn's fed consumption rate, not the slower rate shown while hungry. Stocks use the minimum eater-specific nutrition among verified consumers. Prisoners and downed colonists are assumed to be served from food a free colonist can reach; babies are assumed breastfed while a lactating colonist is present. Spoilage uses seasonal outdoor temperature or maintained current room temperature; food expiring during a day is conservatively excluded for that day. Temperature control failure, processing and future deliveries invalidate the projection.</AM_NutritionAssumptions>
+  <AM_WarningPartial>A shortage appears within the threshold, but the scan was incomplete: unchecked feed may cover it. Treat as a possible shortage only.</AM_WarningPartial>
+  <AM_Standing>Plants currently standing in pens (eaten once, not replenished): {0} nutrition</AM_Standing>
+  <AM_AnimalShortage>With pasture and standing plants, first animal feed deficit: {0}</AM_AnimalShortage>
+  <AM_RoamingGrazers>{0} grazing animals outside pens ({1} nutrition per day) feed on wild plants and are excluded from the forecast</AM_RoamingGrazers>
+  <AM_BreastfedBabies>{0} babies are assumed breastfed and excluded from stored-food demand</AM_BreastfedBabies>
+  <AM_PenShared>(shares feed with other consumers: which pen runs short depends on allocation)</AM_PenShared>
+  <AM_AlertLabel>Feed shortage: day {0}</AM_AlertLabel>
+  <AM_AlertExplanation>A complete forecast predicts that colony animals will run short of feed within the warning threshold. This is a conditional estimate based on the stated assumptions, not a certainty.</AM_AlertExplanation>
+  <AM_AlertClick>Click to open the forecast.</AM_AlertClick>
+  <AM_ShowAlert>Show an alert when a feed shortage is predicted</AM_ShowAlert>
+  <AM_OpenWindow>Open forecast window</AM_OpenWindow>
 </LanguageData>
