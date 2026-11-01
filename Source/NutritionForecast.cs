@@ -9,6 +9,8 @@ namespace Pengin.AnimalManagement
     public sealed class Projection
     {
         public int FirstShortageDay;
+        // Animal-only: a human food deficit is reported separately and must not raise feed warnings.
+        public int FirstAnimalShortageDay;
         public int[] FirstShortageDays;
         public double StockConsumed, HumanStockConsumed, PastureConsumed, FinalAnimalCount;
         public double SpoiledNutrition;
@@ -50,6 +52,7 @@ namespace Pengin.AnimalManagement
                     if(need[i]>Epsilon)
                     {
                         if(result.FirstShortageDay==0)result.FirstShortageDay=day;
+                        if(!demands[i].Human&&result.FirstAnimalShortageDay==0)result.FirstAnimalShortageDay=day;
                         if(result.FirstShortageDays[i]==0)result.FirstShortageDays[i]=day;
                     }
                 }

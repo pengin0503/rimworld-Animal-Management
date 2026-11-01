@@ -11,7 +11,7 @@
   <AM_Coverage>備蓄だけで維持する推定日数: {0}</AM_Coverage>
   <AM_Species>最も不足しやすい種: {0}（{1}日。他の動物との餌の共有あり）</AM_Species>
   <AM_Partial>不完全：走査・アクセス確認上限、または成長値の異常。未確認の餌は加算していません。完全な予測として扱わないでください。</AM_Partial>
-  <AM_Warning>備蓄量の推定が少なくなっています。放牧草は未計算です。</AM_Warning>
+  <AM_Warning>家畜の備蓄飼料が少ない推定です。放牧により実際の日数は変わる場合があります。</AM_Warning>
   <AM_PenHeader>家畜小屋・放牧地（本日の自然成長 / 消費 / 差分：栄養/日）:</AM_PenHeader>
   <AM_PenLine>{0}: {1} / {2} / {3}</AM_PenLine>
   <AM_MorePens>ほかに{0}か所（上位3件のみ表示）</AM_MorePens>
@@ -20,6 +20,7 @@
   <AM_Deaths>30日間の仮定死亡数：{0}（既存種構成に比例した成体換算）</AM_Deaths>
   <AM_HumanDemand>計算対象の人間の日次必要栄養：{0}</AM_HumanDemand>
   <AM_StockShortage>備蓄のみ：対象消費者で最初の不足予測：{0}</AM_StockShortage>
+  <AM_AnimalStockShortage>備蓄のみ：家畜で最初の飼料不足予測：{0}</AM_AnimalStockShortage>
   <AM_NoShortage>対象期間内のモデル上の不足なし</AM_NoShortage>
   <AM_ShortageDay>{0}日目（今日を1日目とする）</AM_ShortageDay>
   <AM_SpeciesLine>{0}：{1}頭／日次栄養 {2}</AM_SpeciesLine>
