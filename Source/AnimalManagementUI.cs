@@ -82,18 +82,18 @@ namespace Pengin.AnimalManagement
     public sealed class Alert_FeedShortage : Alert
     {
         readonly List<string> lines=new List<string>();
-        int earliest;
+        int earliest;Map earliestMap;
         public Alert_FeedShortage(){defaultPriority=AlertPriority.High;}
         public override AlertReport GetReport()
         {
-            lines.Clear();earliest=0;
+            lines.Clear();earliest=0;earliestMap=null;
             if(AnimalManagementMod.Settings==null||!AnimalManagementMod.Settings.ShowAlert)return AlertReport.Inactive;
             foreach(Map map in Find.Maps)
             {
                 FeedForecast f=map.GetComponent<FeedForecast>();
                 if(f==null||!ForecastText.Warns(f))continue;
                 int day=f.Snapshot.Full.FirstAnimalShortageDay;
-                if(earliest==0||day<earliest)earliest=day;
+                if(earliest==0||day<earliest){earliest=day;earliestMap=map;}
                 lines.Add("- "+map.Parent.LabelCap+": "+"AM_ShortageDay".Translate(day));
             }
             return lines.Count>0?AlertReport.Active:AlertReport.Inactive;
@@ -105,6 +105,12 @@ namespace Pengin.AnimalManagement
         }
         protected override void OnClick()
         {
+            // The window shows the current map: switch to an affected map first when the
+            // current one is not reported.
+            GetReport();
+            Map current=Find.CurrentMap;
+            FeedForecast here=current==null?null:current.GetComponent<FeedForecast>();
+            if(earliestMap!=null&&(here==null||!ForecastText.Warns(here)))CameraJumper.TryJump(earliestMap.Center,earliestMap);
             if(!Find.WindowStack.IsOpen<Window_FeedForecast>())Find.WindowStack.Add(new Window_FeedForecast());
         }
     }

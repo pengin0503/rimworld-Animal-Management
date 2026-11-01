@@ -66,11 +66,8 @@ namespace Pengin.AnimalManagement
                 result.FinalAnimalCount=count;
                 var pools=growth(day).Select(p=>Copy(p,demands.Count)).Where(p=>p.Pasture).Concat(stock).ToList();
                 double[] need=demands.Select(d=>d.Daily*(d.Human?1:scale)).ToArray();
-                Allocate(pools,demands,need,true,result,p=>!AnyAccess(p,animal));
-                Allocate(pools,demands,need,true,result,p=>true);
-                Allocate(pools,demands,need,false,result,p=>p.Pasture);
-                Allocate(pools,demands,need,false,result,p=>p.Standing);
-                Allocate(pools,demands,need,false,result,p=>true);
+                Allocate(pools,demands,need,true,result,p=>!AnyAccess(p,animal),p=>true);
+                Allocate(pools,demands,need,false,result,p=>p.Pasture,p=>p.Standing,p=>true);
                 for(int i=0;i<need.Length;i++)
                 {
                     result.Unmet[i]+=need[i];
@@ -104,7 +101,11 @@ namespace Pengin.AnimalManagement
             graph[b].Add(new Edge{To=a,Reverse=graph[a].Count-1,Capacity=0});
             return edge;
         }
-        static void Allocate(List<FeedPool> pools,IList<Demand> demands,double[] need,bool humans,Projection result,Func<FeedPool,bool> include)
+        // Staged preference inside ONE residual graph: each stage only opens more source
+        // capacity, then augments again. Later stages can reroute earlier flow through the
+        // reverse edges, so preferring a source never lowers the total that can be fed,
+        // and flow already taken from a preferred source is never given back.
+        static void Allocate(List<FeedPool> pools,IList<Demand> demands,double[] need,bool humans,Projection result,params Func<FeedPool,bool>[] stages)
         {
             bool anyNeed=false;
             for(int a=0;a<demands.Count;a++)if(demands[a].Human==humans&&need[a]>Epsilon){anyNeed=true;break;}
@@ -112,12 +113,13 @@ namespace Pengin.AnimalManagement
             int sink=pools.Count+demands.Count+1;
             var graph=new List<Edge>[sink+1];for(int i=0;i<graph.Length;i++)graph[i]=new List<Edge>();
             var sourceEdges=new Edge[pools.Count];var sinkEdges=new Edge[demands.Count];
+            var usable=new bool[pools.Count];var opened=new bool[pools.Count];
             for(int p=0;p<pools.Count;p++)
             {
                 FeedPool pool=pools[p];
-                bool usable=pool.Nutrition>Epsilon&&include(pool)&&!(humans&&(pool.Pasture||pool.Standing));
-                sourceEdges[p]=Add(graph,0,p+1,usable?pool.Nutrition:0);
-                if(!usable)continue;
+                usable[p]=pool.Nutrition>Epsilon&&!(humans&&(pool.Pasture||pool.Standing));
+                sourceEdges[p]=Add(graph,0,p+1,0);
+                if(!usable[p])continue;
                 for(int a=0;a<demands.Count;a++)
                     if(demands[a].Human==humans&&pool.Access[a]&&need[a]>Epsilon)
                         Add(graph,p+1,pools.Count+a+1,pool.Nutrition);
@@ -125,27 +127,29 @@ namespace Pengin.AnimalManagement
             for(int a=0;a<demands.Count;a++)
                 if(demands[a].Human==humans)sinkEdges[a]=Add(graph,pools.Count+a+1,sink,need[a]);
             var level=new int[graph.Length];var next=new int[graph.Length];
-            while(true)
+            foreach(Func<FeedPool,bool> stage in stages)
             {
-                for(int i=0;i<level.Length;i++)level[i]=-1;
-                var queue=new Queue<int>();queue.Enqueue(0);level[0]=0;
-                while(queue.Count>0)
+                for(int p=0;p<pools.Count;p++)
+                    if(usable[p]&&!opened[p]&&stage(pools[p])){opened[p]=true;sourceEdges[p].Capacity=pools[p].Nutrition;}
+                while(true)
                 {
-                    int u=queue.Dequeue();foreach(Edge e in graph[u])
-                        if(e.Capacity>Epsilon&&level[e.To]<0){level[e.To]=level[u]+1;queue.Enqueue(e.To);}
+                    for(int i=0;i<level.Length;i++)level[i]=-1;
+                    var queue=new Queue<int>();queue.Enqueue(0);level[0]=0;
+                    while(queue.Count>0)
+                    {
+                        int u=queue.Dequeue();foreach(Edge e in graph[u])
+                            if(e.Capacity>Epsilon&&level[e.To]<0){level[e.To]=level[u]+1;queue.Enqueue(e.To);}
+                    }
+                    if(level[sink]<0)break;
+                    Array.Clear(next,0,next.Length);
+                    while(Send(graph,level,next,0,sink,double.MaxValue)>Epsilon){}
                 }
-                if(level[sink]<0)break;
-                Array.Clear(next,0,next.Length);
-                while(Send(graph,level,next,0,sink,double.MaxValue)>Epsilon){}
             }
             for(int p=0;p<pools.Count;p++)
             {
-                if(!(pools[p].Nutrition>Epsilon))continue;
-                double offered=sourceEdges[p].Capacity;
-                bool usable=include(pools[p])&&!(humans&&(pools[p].Pasture||pools[p].Standing));
-                if(!usable)continue;
-                double consumed=Math.Max(0,pools[p].Nutrition-offered);
-                pools[p].Nutrition=offered;
+                if(!opened[p])continue;
+                double consumed=Math.Max(0,pools[p].Nutrition-sourceEdges[p].Capacity);
+                pools[p].Nutrition=sourceEdges[p].Capacity;
                 if(pools[p].Pasture)result.PastureConsumed+=consumed;
                 else if(pools[p].Standing)result.StandingConsumed+=consumed;
                 else {result.StockConsumed+=consumed;if(humans)result.HumanStockConsumed+=consumed;}

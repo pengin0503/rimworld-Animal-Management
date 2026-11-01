@@ -127,7 +127,7 @@ The stock scan walked `listerThings.AllThings` with a 12,000-entry cap. On a gen
 
 ### Checks performed
 
-- 23 model assertions pass, including staged allocation and multi-horizon equivalence.
+- 25 model assertions pass, including staged allocation with cross-stage rerouting (review follow-up) and multi-horizon equivalence.
 - `validate_package.py` passes (45 keys).
 - Release build has 0 warnings and 0 errors against the exact private 1.7.4985 rev1269 DLLs, and also against `Krafs.Rimworld.Ref`.
 - Static reference check: 136 members and 86 types matched, 0 mismatches.
@@ -139,3 +139,8 @@ The stock scan walked `listerThings.AllThings` with a 12,000-entry cap. On a gen
   - `Window_FeedForecast` constructs without exceptions.
 
 Still unverified: long normal gameplay, pens and standing plants on a populated colony, babies and prisoners, rendering of the alert and window, large-map calculation time/TPS and large mod lists.
+
+Review follow-up (PR #16):
+- Staged preference now opens source capacity stage by stage inside one residual graph. Later stages can reroute earlier pasture/meal flow, so a preference never creates a deficit that a single max-flow would avoid. Two regression assertions were added.
+- The feed alert switches to an affected map before opening the window when the current map is not affected.
+- The bounded real-game probe was re-run with identical results.
