@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <AM_Description>Stored feed estimate only. Grazing, reachability, diet restrictions and competing consumers are excluded.</AM_Description>
+  <AM_WarnDays>Warning threshold (days): {0}</AM_WarnDays>
+  <AM_Forbidden>Include forbidden stacks</AM_Forbidden>
+  <AM_NoMap>Select a colony map.</AM_NoMap>
+  <AM_Refresh>Recalculate</AM_Refresh>
+  <AM_Animals>Colony animals: {0}</AM_Animals>
+  <AM_Demand>Nutrition demand per day: {0}</AM_Demand>
+  <AM_Stock>Potential stored nutrition: {0} ({1} stacks)</AM_Stock>
+  <AM_Coverage>Stock-only coverage (days): {0}</AM_Coverage>
+  <AM_Species>Tightest species: {0} ({1} days; food can be shared)</AM_Species>
+  <AM_Partial>Partial scan: more than 12,000 objects.</AM_Partial>
+  <AM_Warning>Low stock estimate; grazing can change actual coverage.</AM_Warning>
+</LanguageData>

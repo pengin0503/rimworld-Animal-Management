@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <AM_Description>備蓄飼料の概算です。放牧草・到達可能性・食事制限・食料の競合は含みません。</AM_Description>
+  <AM_WarnDays>警告の基準日数: {0}</AM_WarnDays>
+  <AM_Forbidden>禁止中の飼料も集計</AM_Forbidden>
+  <AM_NoMap>コロニーマップを選択してください。</AM_NoMap>
+  <AM_Refresh>再計算</AM_Refresh>
+  <AM_Animals>家畜数: {0}</AM_Animals>
+  <AM_Demand>1日の栄養消費量: {0}</AM_Demand>
+  <AM_Stock>備蓄栄養の候補: {0}（{1}スタック）</AM_Stock>
+  <AM_Coverage>備蓄だけで維持する推定日数: {0}</AM_Coverage>
+  <AM_Species>最も不足しやすい種: {0}（{1}日。他の動物との餌の共有あり）</AM_Species>
+  <AM_Partial>一部のみ集計しました（対象オブジェクトが12,000を超過）。</AM_Partial>
+  <AM_Warning>備蓄量の推定が少なくなっています。放牧草は未計算です。</AM_Warning>
+</LanguageData>

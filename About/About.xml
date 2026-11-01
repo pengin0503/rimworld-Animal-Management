@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Animal Management</name>
+  <author>pengin0503</author>
+  <packageId>pengin0503.animalmanagement</packageId>
+  <supportedVersions><li>1.7</li></supportedVersions>
+  <description>Animal feeding and stored nutrition forecast. Experimental development build; not verified in game.</description>
+</ModMetaData>
