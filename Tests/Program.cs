@@ -45,6 +45,28 @@ static class Program
         Check(r.FirstShortageDay==0,"flow reroutes generalist demand to preserve specialist food");
         r=NutritionForecast.Run(new List<Demand>{D(1)},new List<FeedPool>{new FeedPool{Nutrition=20,Access=new[]{true},LastFreshDay=1}},None,7,0,0);
         Check(r.FirstShortageDay==2&&r.CoveredWholeDays==1&&r.SpoiledNutrition==19,"expired stocks cannot sustain future days");
+        // Humans eat food animals cannot use before shared feed.
+        r=NutritionForecast.Run(new List<Demand>{D(1,true),D(1)},new List<FeedPool>{F(1,true,false),F(1,true,true)},None,1,0,0);
+        Check(r.FirstShortageDay==0,"humans prefer meals over shared animal feed");
+        // Animals eat expiring pasture, then standing plants, before stored feed.
+        var stockPool=F(5,true);
+        r=NutritionForecast.Run(new List<Demand>{D(2)},new List<FeedPool>{stockPool,new FeedPool{Nutrition=1,Standing=true,Access=new[]{true}}},
+            day=>new List<FeedPool>{new FeedPool{Nutrition=1,Pasture=true,Access=new[]{true}}},1,0,0);
+        Check(r.StockConsumed==0&&r.PastureConsumed==1&&r.StandingConsumed==1,"pasture then standing before stock");
+        bool humanStanding=NutritionForecast.Run(new List<Demand>{D(1,true)},new List<FeedPool>{new FeedPool{Nutrition=9,Standing=true,Access=new[]{true}}},None,1,0,0).FirstShortageDay==1;
+        Check(humanStanding,"humans never graze standing pen plants");
+        // A preferred source must not strand a consumer that only the preferred source can feed.
+        r=NutritionForecast.Run(new List<Demand>{D(1),D(1)},new List<FeedPool>{F(1,true,false)},
+            day=>new List<FeedPool>{new FeedPool{Nutrition=1,Pasture=true,Access=new[]{true,true}}},1,0,0);
+        Check(r.FirstShortageDay==0&&r.PastureConsumed==1&&r.StockConsumed==1,"later stages reroute earlier pasture flow");
+        r=NutritionForecast.Run(new List<Demand>{D(1,true),D(1,true)},new List<FeedPool>{F(1,true,true),F(1,false,true)},None,1,0,0);
+        Check(r.FirstShortageDay==0,"human stages reroute as well");
+        // An excluded (zero-demand) animal does not make a pool "animal feed" for the human stage.
+        r=NutritionForecast.Run(new List<Demand>{D(1,true),D(1),D(0)},new List<FeedPool>{F(1,true,true,false),F(1,true,false,true)},None,1,0,0);
+        Check(r.FirstShortageDay==0,"zero-demand animals do not block the human-first stage");
+        var multi=NutritionForecast.Run(d,new List<FeedPool>{F(20,true,true)},None,new[]{7,15,30},0,0);
+        var single=NutritionForecast.Run(d,new List<FeedPool>{F(20,true,true)},None,15,0,0);
+        Check(multi[1].FirstShortageDay==single.FirstShortageDay&&Math.Abs(multi[1].StockConsumed-single.StockConsumed)<1e-9&&multi[0].Horizon==7&&multi[2].CoveredWholeDays==single.CoveredWholeDays,"one simulation serves every horizon");
         var timer=System.Diagnostics.Stopwatch.StartNew();
         var many=new List<Demand>();for(int i=0;i<100;i++)many.Add(D(1));
         var access=new bool[100];Array.Fill(access,true);

@@ -6,12 +6,12 @@
   <AM_NoMap>コロニーマップを選択してください。</AM_NoMap>
   <AM_Refresh>再計算</AM_Refresh>
   <AM_Animals>家畜数: {0}</AM_Animals>
-  <AM_Demand>1日の栄養消費量: {0}</AM_Demand>
+  <AM_Demand>家畜の1日の栄養消費量（満腹時の速度）: {0}</AM_Demand>
   <AM_Stock>家畜・人間が利用可能と確認した備蓄：栄養 {0}（{1} スタック）</AM_Stock>
   <AM_Coverage>備蓄だけで維持する推定日数: {0}</AM_Coverage>
   <AM_Species>最も不足しやすい種: {0}（{1}日。他の動物との餌の共有あり）</AM_Species>
   <AM_Partial>不完全：走査・アクセス確認上限、または成長値の異常。未確認の餌は加算していません。完全な予測として扱わないでください。</AM_Partial>
-  <AM_Warning>家畜の備蓄飼料が少ない推定です。放牧により実際の日数は変わる場合があります。</AM_Warning>
+  <AM_Warning>警告日数以内に家畜の飼料不足が予測されています（推定）。</AM_Warning>
   <AM_PenHeader>家畜小屋・放牧地（本日の自然成長 / 消費 / 差分：栄養/日）:</AM_PenHeader>
   <AM_PenLine>{0}: {1} / {2} / {3}</AM_PenLine>
   <AM_MorePens>ほかに{0}か所（上位3件のみ表示）</AM_MorePens>
@@ -26,11 +26,11 @@
   <AM_SpeciesLine>{0}：{1}頭／日次栄養 {2}</AM_SpeciesLine>
   <AM_PenPopulation>放牧地 {0}：{1}頭／日次栄養 {2}</AM_PenPopulation>
   <AM_PenSpecies>{0}／{1}：{2}頭／日次栄養 {3}</AM_PenSpecies>
-  <AM_Projection>{0}日予測：{1}；備蓄消費 {2}、放牧由来消費 {3}、未充足栄養 {4}（人間を含む）</AM_Projection>
+  <AM_Projection>{0}日予測：{1}；備蓄消費 {2}、放牧・立ち草消費 {3}、未充足栄養 {4}（人間を含む）</AM_Projection>
   <AM_PenProjection>{0}・{1}日：家畜の未充足栄養 {2}；最初の不足 {3}</AM_PenProjection>
   <AM_PopulationAt>{0}日目：シナリオ上の頭数 {1}</AM_PopulationAt>
-  <AM_Assumptions>前提：現在の食性・食料ポリシー・アクセスが継続。人間の備蓄消費を先に割り当て、家畜は放牧由来を優先。放牧地成長はバニラの季節別推計を使い、季節モデルの氷点下ではゼロとします。既存の立木・草は備蓄に含めず、未消費の日次成長を繰り越しません。実際のAIの餌選択とは異なる場合があります。給餌・屠殺は自動化しません。</AM_Assumptions>
-  <AM_Invalidation>放牧地・扉・許可エリア・食料ポリシーの変更、出生死亡、移住、備蓄変更後は再計算してください。襲撃、異常気象、飼育者の給餌、成長段階の変化は未考慮です。放牧地外の採食は省略します。不完全走査時を含め、予測には不確実性があります。</AM_Invalidation>
+  <AM_Assumptions>前提：現在の食性・食料ポリシー・アクセスが継続します。食べる順番を段階的に仮定します。人間は家畜が食べられない食料を先に、次に共有の食料を食べます。家畜はその日の放牧地の成長分を先に、次に放牧地に生えている植物、最後に備蓄を食べます。放牧地の成長はバニラの季節別推計を使い、季節モデルの氷点下ではゼロとします。使わなかった日次成長は繰り越さず、立ち草は回復しない前提です。実際のAIの餌選択とは異なる場合があります。給餌・屠殺は自動化しません。</AM_Assumptions>
+  <AM_Invalidation>放牧地・扉・許可エリア・食料ポリシーの変更、出生死亡、移住、備蓄変更後は再計算してください。襲撃、異常気象、飼育者による家畜への給餌、成長段階の変化は未考慮です。放牧地外で草を食べる家畜は予測から除外しています。不完全走査時を含め、予測には不確実性があります。</AM_Invalidation>
   <AM_Stale>設定が変更されたか計算結果がありません。再計算してください。</AM_Stale>
   <AM_Failed>計算失敗：以前の結果が表示されても現在の予測として使用しないでください。</AM_Failed>
   <AM_Scan>計算時Tick {0}；計算 {1} ms／アクセス確認 {2}件（TPS計測ではありません）</AM_Scan>
@@ -38,5 +38,16 @@
   <AM_Spoilage>腐敗による予測備蓄損失：栄養 {0}</AM_Spoilage>
   <AM_CoveredDays>備蓄のみで満たせる予測日数：{0}{1}日（予測上限30日）</AM_CoveredDays>
   <AM_PenProduction>本日の自生成長による生産 {0} 栄養/日；収支 {1}</AM_PenProduction>
-  <AM_NutritionAssumptions>備蓄は確認した消費者のうち最小の摂取栄養量で換算します。腐敗は屋外の季節温度、または現在の室温が維持される前提です。日中に腐敗する餌は保守的にその日から除外します。温度管理の故障、加工、今後の飼育者による搬入で予測は変わります。</AM_NutritionAssumptions>
+  <AM_NutritionAssumptions>需要は空腹時の遅い減少速度ではなく、満腹時の消費速度で計算します。備蓄は確認した消費者のうち最小の摂取栄養量で換算します。囚人・ダウン中の入植者は、自由な入植者が到達できる食料から配膳される前提です。授乳中の入植者がいる間、乳児は授乳で育つ前提です。腐敗は屋外の季節温度、または現在の室温が維持される前提です。日中に腐敗する餌は保守的にその日から除外します。温度管理の故障、加工、今後の搬入で予測は変わります。</AM_NutritionAssumptions>
+  <AM_WarningPartial>警告日数以内に不足が出ていますが、走査が不完全です。確認できなかった飼料で足りる可能性があるため、不足の可能性として扱ってください。</AM_WarningPartial>
+  <AM_Standing>放牧地に今生えている植物（一度食べると回復しない）：栄養 {0}</AM_Standing>
+  <AM_AnimalShortage>放牧・立ち草を含めた家畜で最初の飼料不足：{0}</AM_AnimalShortage>
+  <AM_RoamingGrazers>放牧地の外で草を食べる家畜 {0}頭（1日の栄養 {1}）は野生の植物を食べるため、予測から除外しています</AM_RoamingGrazers>
+  <AM_BreastfedBabies>乳児 {0}人は授乳で育つ前提とし、備蓄の需要から除外しています</AM_BreastfedBabies>
+  <AM_PenShared>（他の消費者と飼料を共有しているため、どの放牧地が不足するかは割り当て次第です）</AM_PenShared>
+  <AM_AlertLabel>飼料不足：{0}日目</AM_AlertLabel>
+  <AM_AlertExplanation>完全な予測で、警告日数以内に家畜の飼料が不足すると見込まれています。示した前提にもとづく条件付きの推定であり、確定ではありません。</AM_AlertExplanation>
+  <AM_AlertClick>クリックで予測を開きます。</AM_AlertClick>
+  <AM_ShowAlert>飼料不足が予測されたらアラートを表示</AM_ShowAlert>
+  <AM_OpenWindow>予測ウィンドウを開く</AM_OpenWindow>
 </LanguageData>

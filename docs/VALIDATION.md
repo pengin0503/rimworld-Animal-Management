@@ -92,3 +92,56 @@ Release-review findings that are not blocking:
 - Maps are independent.
 
 Still unverified, and not claimed: normal populated gameplay, full-map save/load, actual feeding behavior, large-map calculation time/TPS and compatibility with large mod lists. The earlier A-level and 12,000-tick evidence was produced on earlier DLL bytes.
+
+## v1.0.1 (2026-11-01)
+
+### Issues resolved
+
+| Issue | Change |
+|---|---|
+| #7 | A definitive warning and the alert require a complete, current snapshot. A partial scan only shows a "possible shortage" line. |
+| #8 | A pen that shares stored feed with other consumers labels its shortage date as allocation-dependent. |
+| #9 | Prisoners and downed colonists are served from food any capable free colonist can reach. |
+| #10 | Japanese and English About.xml descriptions carry the same scope and cautions. |
+| #11 | Demand uses `FoodFallPerTickAssumingCategory(Fed)`. The current-category rate is 0.5x while hungry, 0.25x while urgently hungry and 0 while starving (decompiled `HungerLevelUtility.HungerMultiplier`). |
+| #12 | Reachability is cached per (consumer, district) and `WillEat` per (consumer, def) for stacks without ingredients. Only cache misses count against the 2,000-check budget. |
+| #13 | Plants standing in pens (`IsEdibleByPastureAnimals`, nutrition stat) are a non-replenishing pool for pen animals, capped at 30,000 pen cells. |
+| #14 | Staged allocation. Humans use food no animal can use before shared food. Animals use daily growth, then standing plants, then stock. Babies are excluded while a lactating colonist is present. |
+| #15 | Grazers outside pens are listed and excluded from the forecast instead of being charged to stock. |
+
+Also added:
+- a standard alert for a predicted animal feed shortage (complete snapshots only), which opens a non-modal forecast window;
+- an alert on/off setting.
+
+The warning threshold no longer marks the snapshot stale. The warning and alert use the forecast including pasture and standing plants. The stock-only figures are still shown.
+
+### Found by the in-game probe and fixed
+
+The stock scan walked `listerThings.AllThings` with a 12,000-entry cap. On a generated map, trees and grass consumed the cap before any stored food, and the result was partial with no stock counted. This was present since v1.0.0. The scan now walks `ThingRequestGroup.FoodSource` and skips plants before counting.
+
+### Optimisation
+
+- One simulation serves the 7/15/30-day horizons; shorter horizons are prefixes of the longest one.
+- Together with the stock-only run, this is 2 simulations per refresh instead of 4.
+- The access caches above remove repeated `CanReach`/`WillEat` evaluations.
+
+### Checks performed
+
+- 25 model assertions pass, including staged allocation with cross-stage rerouting (review follow-up) and multi-horizon equivalence.
+- `validate_package.py` passes (45 keys).
+- Release build has 0 warnings and 0 errors against the exact private 1.7.4985 rev1269 DLLs, and also against `Krafs.Rimworld.Ref`.
+- Static reference check: 136 members and 86 types matched, 0 mismatches.
+- Real game, Linux WaylithClr 1.7.4985 rev1269, private host. The probe was private and not published.
+  - D bounded tick (2,400 ticks, Crashlanded): D stage completed; overall incomplete as always reported.
+  - `Recalculate` ran without exceptions.
+  - With the default setting, all 12 start stacks are forbidden and were excluded (stock 0, complete scan). The husky's shortage alert was active ("Feed shortage: day 1").
+  - With forbidden food included: 12 stacks and 51.3 nutrition were counted with 52 access checks. The first animal shortage was day 10, consistent with 4.8 + 0.8 nutrition per day.
+  - `Window_FeedForecast` constructs without exceptions.
+
+Still unverified: long normal gameplay, pens and standing plants on a populated colony, babies and prisoners, rendering of the alert and window, large-map calculation time/TPS and large mod lists.
+
+Review follow-up (PR #16):
+- Staged preference now opens source capacity stage by stage inside one residual graph. Later stages can reroute earlier pasture/meal flow, so a preference never creates a deficit that a single max-flow would avoid. Two regression assertions were added.
+- The feed alert switches to an affected map before opening the window when the current map is not affected.
+- The bounded real-game probe was re-run with identical results.
+- Animals with zero modeled demand (excluded grazers) no longer count as consumers of a pool when deciding which food humans eat first. One more regression assertion was added (26 in total).

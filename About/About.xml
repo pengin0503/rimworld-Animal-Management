@@ -4,8 +4,8 @@
   <author>pengin0503</author>
   <packageId>pengin0503.animalmanagement</packageId>
   <supportedVersions><li>1.7</li></supportedVersions>
-  <modVersion>1.0.0</modVersion>
-  <description>Shows livestock counts and daily nutrition demand by species and pen, stored feed shared with colonists, spoilage, seasonal pasture growth and conditional 7/15/30-day feed forecasts with stated assumptions. Forecasts are estimates, not guarantees. Information only: no automatic feeding, slaughter or setting changes.
+  <modVersion>1.0.1</modVersion>
+  <description>Shows livestock counts and fed-rate daily nutrition demand by species and pen, stored feed shared with colonists and prisoners, spoilage, plants standing in pens and seasonal pasture growth, and gives conditional 7/15/30-day feed forecasts with stated assumptions and an alert when a complete forecast predicts a shortage. Forecasts are estimates, not guarantees. Information only: no automatic feeding, slaughter or setting changes.
 
-家畜の頭数・日次栄養需要、入植者と共有する備蓄飼料、腐敗、季節ごとの放牧地の成長を表示し、前提条件付きで7・15・30日の飼料収支を予測します。予測は推定です。自動給餌・自動屠殺・設定変更は行いません。</description>
+家畜の頭数と満腹時の1日の栄養需要を種別・放牧地別に表示します。入植者・囚人と共有する備蓄飼料、腐敗、放牧地に生えている植物、季節ごとの放牧地の成長も表示し、前提条件付きで7・15・30日の飼料収支を予測します。完全な予測で不足が見込まれるとアラートを出します。予測は推定であり、確定ではありません。表示専用で、自動給餌・自動屠殺・設定変更は行いません。</description>
 </ModMetaData>
