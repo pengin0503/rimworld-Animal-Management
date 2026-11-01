@@ -4,24 +4,24 @@
 
 ## 日本語
 
-Animal Managementは、RimWorld 1.7のコロニーで飼育している動物の餌の備蓄状況を確認するMODです。家畜数、推定日次栄養消費、食べられる可能性のある備蓄飼料、備蓄だけで維持できる概算日数、餌の種類が限られる動物種を表示します。
+RimWorld 1.7の家畜栄養予測MODです。動物種・放牧地ごとの頭数と日次需要、家畜と人間の共有備蓄、備蓄のみの不足日、7・15・30日の季節別予測を表示します。放牧由来と備蓄由来の消費を分け、同じ餌は一度だけ割り当てます。
 
-警告の基準日数を設定でき、禁止した飼料を計算に含めるか選択できます。自動屠殺・自動給餌などの操作は行いません。
+食性、食料ポリシー、許可エリア、禁止、放牧地、到達性を確認します。確認上限を超えた場合は「不完全」と表示し、未確認の餌を加算しません。出生・死亡は、既存の種構成に比例した成体換算の任意シナリオとして指定できます。
 
-**現在は開発版で、ゲーム内動作は未確認です。** 放牧地の成長、季節変化、動物の移動可否、他の動物や入植者による餌の取り合い、繁殖による消費増加は予測に含まれません。表示される残日数は保証値ではありません。
+**開発版です。通常プレイ、マップ保存・読み込み、270以上のMOD環境、実スキャン時間・TPSへの影響は未検証です。** 季節予測はバニラの季節別成長推計を使い、季節モデルの氷点下では成長ゼロとします。腐敗、異常気象、飼育者の給餌、消化補正、成長段階の変化は未考慮です。予測の餌割当は実際のAIと異なる場合があります。食料や放牧地を変更したら再計算してください。
 
 ### 利用方法
 
-RimWorld 1.7用のビルドをMODフォルダへ配置して有効化し、「設定」→「MOD設定」→「Animal Management」を開いてください。開発版のため、重要なセーブデータでは利用しないでください。
+RimWorld 1.7用の開発版ビルドをModsフォルダに配置して有効化し、「設定」→「MOD設定」→「Animal Management」を開きます。スクロールして前提条件と全放牧地の結果を確認できます。自動給餌・自動屠殺・設定変更は行いません。重要なセーブでの利用は避けてください。
 
 ## English
 
-Animal Management is a RimWorld 1.7 utility for monitoring feed stock for your colony animals. It shows animal counts, estimated daily nutrition consumption, potentially edible stored feed, approximate coverage days, and animal species with limited suitable feed.
+A RimWorld 1.7 animal nutrition forecasting mod. It shows animal counts and daily demand by species and pen, shared animal/human food stocks, stock-only shortage timing, and seasonal 7/15/30-day scenarios. Pasture and stock consumption are separate; each feed pool is allocated only once.
 
-Configure the warning threshold and whether forbidden food is included. It does not automatically feed or slaughter animals.
+It checks diets, food policies, allowed areas, forbidden state, pen boundaries and reachability. Budget-limited results are labeled incomplete and unverified food is not credited. Optional birth/death scenarios use adult-equivalent demand proportional to existing species composition.
 
-**This is a development build and has not been tested during gameplay.** Forecasts exclude pasture growth, seasonal changes, access restrictions, competition for food and future breeding. Coverage days are estimates, not guarantees.
+**Development build. Normal gameplay, full-map save/load, 270+ MOD compatibility and actual scan/TPS overhead are unverified.** Seasonal projections use vanilla quadrum growth estimates, set to zero at modeled freezing temperature. Spoilage, unusual weather, handler feeding, digestion modifiers and future life-stage changes are not modeled. Forecast allocation may differ from game AI. Recalculate when food or pens change.
 
 ### Usage
 
-Install a RimWorld 1.7 build in your Mods folder and enable it. Open Settings → Mod Settings → Animal Management to view estimates. Avoid important save files until the development build has been validated.
+Install a RimWorld 1.7 development build in your Mods folder and enable it. Open Settings → Mod Settings → Animal Management. Scroll to inspect assumptions and every pen. The mod does not automatically feed, slaughter or change animal settings. Avoid important saves until validated.

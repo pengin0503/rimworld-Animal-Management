@@ -1,18 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <LanguageData>
-  <AM_Description>備蓄飼料の概算です。放牧草・到達可能性・食事制限・食料の競合は含みません。</AM_Description>
+  <AM_Description>現在のマップの条件付き栄養予測です。確定値・給餌の保証ではありません。</AM_Description>
   <AM_WarnDays>警告の基準日数: {0}</AM_WarnDays>
   <AM_Forbidden>禁止中の飼料も集計</AM_Forbidden>
   <AM_NoMap>コロニーマップを選択してください。</AM_NoMap>
   <AM_Refresh>再計算</AM_Refresh>
   <AM_Animals>家畜数: {0}</AM_Animals>
   <AM_Demand>1日の栄養消費量: {0}</AM_Demand>
-  <AM_Stock>備蓄栄養の候補: {0}（{1}スタック）</AM_Stock>
+  <AM_Stock>家畜・人間が利用可能と確認した備蓄：栄養 {0}（{1} スタック）</AM_Stock>
   <AM_Coverage>備蓄だけで維持する推定日数: {0}</AM_Coverage>
   <AM_Species>最も不足しやすい種: {0}（{1}日。他の動物との餌の共有あり）</AM_Species>
-  <AM_Partial>一部のみ集計しました（対象オブジェクトが12,000を超過）。</AM_Partial>
+  <AM_Partial>不完全：走査・アクセス確認上限、または成長値の異常。未確認の餌は加算していません。完全な予測として扱わないでください。</AM_Partial>
   <AM_Warning>備蓄量の推定が少なくなっています。放牧草は未計算です。</AM_Warning>
   <AM_PenHeader>家畜小屋・放牧地（本日の自然成長 / 消費 / 差分：栄養/日）:</AM_PenHeader>
   <AM_PenLine>{0}: {1} / {2} / {3}</AM_PenLine>
   <AM_MorePens>ほかに{0}か所（上位3件のみ表示）</AM_MorePens>
+  <AM_PopulationScenario>任意の出生・死亡シナリオを有効化</AM_PopulationScenario>
+  <AM_Births>30日間の仮定出生数：{0}（既存種構成に比例した成体換算）</AM_Births>
+  <AM_Deaths>30日間の仮定死亡数：{0}（既存種構成に比例した成体換算）</AM_Deaths>
+  <AM_HumanDemand>計算対象の人間の日次必要栄養：{0}</AM_HumanDemand>
+  <AM_StockShortage>備蓄のみ：対象消費者で最初の不足予測：{0}</AM_StockShortage>
+  <AM_NoShortage>対象期間内のモデル上の不足なし</AM_NoShortage>
+  <AM_ShortageDay>{0}日目（今日を1日目とする）</AM_ShortageDay>
+  <AM_SpeciesLine>{0}：{1}頭／日次栄養 {2}</AM_SpeciesLine>
+  <AM_PenPopulation>放牧地 {0}：{1}頭／日次栄養 {2}</AM_PenPopulation>
+  <AM_PenSpecies>{0}／{1}：{2}頭／日次栄養 {3}</AM_PenSpecies>
+  <AM_Projection>{0}日予測：{1}；備蓄消費 {2}、放牧由来消費 {3}、未充足栄養 {4}（人間を含む）</AM_Projection>
+  <AM_PenProjection>{0}・{1}日：家畜の未充足栄養 {2}；最初の不足 {3}</AM_PenProjection>
+  <AM_PopulationAt>{0}日目：シナリオ上の頭数 {1}</AM_PopulationAt>
+  <AM_Assumptions>前提：現在の食性・食料ポリシー・アクセスが継続。人間の備蓄消費を先に割り当て、家畜は放牧由来を優先。放牧地成長はバニラの季節別推計を使い、季節モデルの氷点下ではゼロとします。既存の立木・草は備蓄に含めず、未消費の日次成長を繰り越しません。実際のAIの餌選択とは異なる場合があります。給餌・屠殺は自動化しません。</AM_Assumptions>
+  <AM_Invalidation>放牧地・扉・許可エリア・食料ポリシーの変更、出生死亡、移住、備蓄変更後は再計算してください。腐敗、襲撃、異常気象、飼育者の給餌、消化補正、成長段階の変化は未考慮です。放牧地外の採食は省略します。不完全走査時を含め、予測には不確実性があります。</AM_Invalidation>
+  <AM_Stale>設定が変更されたか計算結果がありません。再計算してください。</AM_Stale>
+  <AM_Failed>計算失敗：以前の結果が表示されても現在の予測として使用しないでください。</AM_Failed>
+  <AM_Scan>計算時Tick {0}；計算 {1} ms／アクセス確認 {2}件（TPS計測ではありません）</AM_Scan>
+  <AM_NoPopulationBaseline>出生・死亡シナリオは省略：外挿する既存の動物種・個体がいません。</AM_NoPopulationBaseline>
 </LanguageData>

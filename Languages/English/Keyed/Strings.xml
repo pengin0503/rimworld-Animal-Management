@@ -1,18 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <LanguageData>
-  <AM_Description>Stored feed estimate only. Grazing, reachability, diet restrictions and competing consumers are excluded.</AM_Description>
+  <AM_Description>Conditional nutrition scenarios for this map. Forecasts are estimates, not guarantees.</AM_Description>
   <AM_WarnDays>Warning threshold (days): {0}</AM_WarnDays>
   <AM_Forbidden>Include forbidden stacks</AM_Forbidden>
   <AM_NoMap>Select a colony map.</AM_NoMap>
   <AM_Refresh>Recalculate</AM_Refresh>
   <AM_Animals>Colony animals: {0}</AM_Animals>
   <AM_Demand>Nutrition demand per day: {0}</AM_Demand>
-  <AM_Stock>Potential stored nutrition: {0} ({1} stacks)</AM_Stock>
+  <AM_Stock>Verified consumable stocks for animals and humans: {0} nutrition ({1} stacks)</AM_Stock>
   <AM_Coverage>Stock-only coverage (days): {0}</AM_Coverage>
   <AM_Species>Tightest species: {0} ({1} days; food can be shared)</AM_Species>
-  <AM_Partial>Partial scan: more than 12,000 objects.</AM_Partial>
+  <AM_Partial>Incomplete: object/access budget exceeded or invalid growth data. Omitted feed is not credited. Do not treat projections as complete.</AM_Partial>
   <AM_Warning>Low stock estimate; grazing can change actual coverage.</AM_Warning>
   <AM_PenHeader>Pens (today's natural growth / consumption / net nutrition per day):</AM_PenHeader>
   <AM_PenLine>{0}: {1} / {2} / {3}</AM_PenLine>
   <AM_MorePens>... and {0} more pens (only first three shown)</AM_MorePens>
+  <AM_PopulationScenario>Enable optional births/deaths scenario</AM_PopulationScenario>
+  <AM_Births>Assumed births over 30 days: {0} (proportional adult equivalents)</AM_Births>
+  <AM_Deaths>Assumed deaths over 30 days: {0} (proportional adult equivalents)</AM_Deaths>
+  <AM_HumanDemand>Included human nutrition demand per day: {0}</AM_HumanDemand>
+  <AM_StockShortage>Stocks alone, first deficit among included consumers: {0}</AM_StockShortage>
+  <AM_NoShortage>No modeled deficit within horizon</AM_NoShortage>
+  <AM_ShortageDay>Day {0} (counting today as day 1)</AM_ShortageDay>
+  <AM_SpeciesLine>{0}: {1} animals / {2} nutrition per day</AM_SpeciesLine>
+  <AM_PenPopulation>Pen {0}: {1} animals / {2} nutrition per day</AM_PenPopulation>
+  <AM_PenSpecies>{0} / {1}: {2} animals / {3} nutrition per day</AM_PenSpecies>
+  <AM_Projection>{0}-day scenario: {1}; stocks consumed {2}, pasture consumed {3}, unmet nutrition {4} (including humans)</AM_Projection>
+  <AM_PenProjection>{0}, {1} days: unmet animal nutrition {2}; first deficit {3}</AM_PenProjection>
+  <AM_PopulationAt>Day {0}: scenario animal count {1}</AM_PopulationAt>
+  <AM_Assumptions>Assumptions: current diets, policies and access persist; humans consume stocks first, then animal allocation favors pasture. Seasonal pen growth uses vanilla quadrum estimates, set to zero at modeled freezing temperature. Existing standing plants are not stocks; unused daily growth is not carried over. Forecast food allocation can differ from game AI. No automatic feeding or slaughter.</AM_Assumptions>
+  <AM_Invalidation>Recalculate after pen/door/area or food policy changes, births/deaths, migration or stock changes. Spoilage, raids, weather anomalies, feeding by handlers, digestion modifiers and future maturation are not modeled. Unpenned grazing is omitted. Estimates remain uncertain, especially when partial.</AM_Invalidation>
+  <AM_Stale>Settings changed or snapshot absent: recalculate.</AM_Stale>
+  <AM_Failed>Calculation failed; any earlier snapshot is stale and must not be used as a current forecast.</AM_Failed>
+  <AM_Scan>Snapshot tick {0}; calculation {1} ms / {2} access checks (not a TPS measurement)</AM_Scan>
+  <AM_NoPopulationBaseline>Birth/death scenario omitted: no existing species population to extrapolate.</AM_NoPopulationBaseline>
 </LanguageData>
