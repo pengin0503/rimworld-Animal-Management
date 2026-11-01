@@ -29,6 +29,7 @@ namespace Pengin.AnimalManagement
         public float StockNutrition { get; private set; }
         public bool PartialScan { get; private set; }
         public string LimitingSpecies { get; private set; }
+        public List<string> PenBalanceSummaries { get; private set; } = new List<string>();
         public float LimitingSpeciesDays { get; private set; }
         public float DaysLeft { get { return DailyDemand > 0.0001f ? StockNutrition / DailyDemand : 0f; } }
         public FeedForecast(Map map) : base(map) { }
@@ -44,7 +45,25 @@ namespace Pengin.AnimalManagement
             DailyDemand = StockNutrition = LimitingSpeciesDays = 0f;
             LimitingSpecies = null;
             PartialScan = false;
+            PenBalanceSummaries.Clear();
             if (!map.IsPlayerHome || AnimalManagementMod.Settings == null) return;
+
+            // The game's pen-food calculator already accounts for present-day pasture growth.
+            // Report the net rate by pen separately from the stock-only colony estimate.
+            foreach (Building building in map.listerBuildings.allBuildingsColonist)
+            {
+                CompAnimalPenMarker marker = building.GetComp<CompAnimalPenMarker>();
+                if (marker == null) continue;
+                PenFoodCalculator calc = marker.PenFoodCalculator;
+                if (calc == null) continue;
+                float grown = calc.NutritionPerDayToday;
+                float consumed = calc.SumNutritionConsumptionPerDay;
+                if (float.IsNaN(grown) || float.IsInfinity(grown) ||
+                    float.IsNaN(consumed) || float.IsInfinity(consumed)) continue;
+                PenBalanceSummaries.Add("AM_PenLine".Translate(building.LabelShort,
+                    grown.ToString("0.00"), consumed.ToString("0.00"),
+                    (grown - consumed).ToString("+0.00;-0.00;0.00")));
+            }
 
             var animals = new List<Pawn>();
             foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
@@ -123,6 +142,13 @@ namespace Pengin.AnimalManagement
             list.Label("AM_Coverage".Translate(f.AnimalCount == 0 ? "N/A" : f.DaysLeft.ToString("0.0")));
             if (f.LimitingSpecies != null)
                 list.Label("AM_Species".Translate(f.LimitingSpecies, f.LimitingSpeciesDays.ToString("0.0")));
+            if (f.PenBalanceSummaries.Count > 0)
+            {
+                list.Label("AM_PenHeader".Translate());
+                foreach (string pen in f.PenBalanceSummaries.Take(3)) list.Label(pen);
+                if (f.PenBalanceSummaries.Count > 3)
+                    list.Label("AM_MorePens".Translate(f.PenBalanceSummaries.Count - 3));
+            }
             if (f.PartialScan) list.Label("AM_Partial".Translate());
             if (f.AnimalCount > 0 && f.DaysLeft < Settings.WarnDays) list.Label("AM_Warning".Translate());
             list.End();
