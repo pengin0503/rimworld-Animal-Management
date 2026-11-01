@@ -40,6 +40,8 @@ static class Program
         Check(rejected,"invalid modded numeric data is rejected");
         r=NutritionForecast.Run(new List<Demand>{D(1),D(1)},new List<FeedPool>{F(1,true,true),F(1,true,false)},None,1,0,0);
         Check(r.FirstShortageDay==0,"flow reroutes generalist demand to preserve specialist food");
+        r=NutritionForecast.Run(new List<Demand>{D(1)},new List<FeedPool>{new FeedPool{Nutrition=20,Access=new[]{true},LastFreshDay=1}},None,7,0,0);
+        Check(r.FirstShortageDay==2&&r.CoveredWholeDays==1&&r.SpoiledNutrition==19,"expired stocks cannot sustain future days");
         var timer=System.Diagnostics.Stopwatch.StartNew();
         var many=new List<Demand>();for(int i=0;i<100;i++)many.Add(D(1));
         var access=new bool[100];Array.Fill(access,true);

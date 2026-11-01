@@ -5,12 +5,14 @@ using System.Linq;
 namespace Pengin.AnimalManagement
 {
     public sealed class Demand { public double Daily; public bool Human; }
-    public sealed class FeedPool { public double Nutrition; public bool[] Access; public bool Pasture; }
+    public sealed class FeedPool { public double Nutrition; public bool[] Access; public bool Pasture; public int LastFreshDay=int.MaxValue; }
     public sealed class Projection
     {
         public int FirstShortageDay;
         public int[] FirstShortageDays;
         public double StockConsumed, HumanStockConsumed, PastureConsumed, FinalAnimalCount;
+        public double SpoiledNutrition;
+        public int CoveredWholeDays;
         public double[] Unmet;
     }
 
@@ -32,6 +34,8 @@ namespace Pengin.AnimalManagement
             if(animals==0&&(births>0||deaths>0))throw new ArgumentException("Population scenario requires a species baseline");
             for(int day=1;day<=horizon;day++)
             {
+                foreach(FeedPool pool in stock)
+                    if(day>pool.LastFreshDay){result.SpoiledNutrition+=pool.Nutrition;pool.Nutrition=0;}
                 double count=Math.Max(0,animals+((double)births-deaths)*day/30.0);
                 double scale=animals==0?0:count/animals;
                 result.FinalAnimalCount=count;
@@ -50,13 +54,14 @@ namespace Pengin.AnimalManagement
                     }
                 }
             }
+            result.CoveredWholeDays=result.FirstShortageDay==0?horizon:result.FirstShortageDay-1;
             return result;
         }
         static FeedPool Copy(FeedPool p,int count)
         {
             if(p==null||!Valid(p.Nutrition)||p.Access==null||p.Access.Length!=count)
                 throw new ArgumentException("Invalid feed pool");
-            return new FeedPool{Nutrition=p.Nutrition,Access=p.Access,Pasture=p.Pasture};
+            return new FeedPool{Nutrition=p.Nutrition,Access=p.Access,Pasture=p.Pasture,LastFreshDay=p.LastFreshDay};
         }
         sealed class Edge {public int To,Reverse;public double Capacity;}
         static Edge Add(List<Edge>[] graph,int a,int b,double capacity)

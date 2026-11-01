@@ -62,3 +62,9 @@ Scans run every 10,000 game ticks with a 12,000-object / 2,000-access-check limi
 **Still blocked for v1.0:** normal populated gameplay, full-map save/load and installation/removal, actual task/feeding/wear acceptance, real outfit-manager/race/DLC interactions, 270+ MOD compatibility and actual large-map scan/TPS measurement. Earlier implementation gaps and scenario limitations remain; Issue #1 is open and no v1.0 release is created.
 
 日本語: 最新コミットで実ゲーム読み込みAは合格し、実ゲームTickと独立fixtureが12,000 Tickまで一致しました。ただしD・マップ生成は未適格化で総合判定はincompleteです。実物Scribeによる限定的なデータ往復も合格しましたが、通常プレイやマップ全体の保存・読み込み、実際の業務動作、270以上のMOD環境・実TPSの検証にはなりません。Issue #1と正式版の保留を維持します。
+
+## Implementation continuation: feed lifetime and usable nutrition
+
+Stock pools now retain a conservative last-fresh day, with current rot progress projected across seasonal outdoor temperatures or maintained current indoor temperature. Food that spoils during a modeled day is excluded from that day; leftovers are expired once, not re-counted as consumed. Stocks with different lifetimes are not combined. Eater-specific FoodUtility nutrition is evaluated for verified consumers; the minimum is used for a shared pool, avoiding optimistic genotype/raw-food conversion. Pasture access also checks food policy.
+
+Added modeled whole covered days (30-day horizon), spoilage loss, current natural pen production and daily net balance. The 30-day climate vector is calculated once per snapshot. Existing forecast assertions plus one expiry regression pass; exact-DLL Release build and translation checks pass. No broad new test suite or populated-game acceptance was run. Delivery, weather events and changed temperature control remain explicit invalidation conditions rather than automatic animal-management actions. Historical runtime evidence does not cover new production bytes.
