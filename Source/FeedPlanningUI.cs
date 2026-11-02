@@ -15,6 +15,10 @@ namespace Pengin.AnimalManagement
         int speciesIndex;
         ThingDef capacitySpecies;
         ForecastSnapshot capacitySource;
+        FeedActionPlan hypotheticalPlan;
+        ThingDef hypotheticalDef;
+        ForecastSnapshot hypotheticalSource;
+        int hypotheticalDays;
         public void Draw(Listing_Standard list,FeedForecast forecast)
         {
             var settings=AnimalManagementMod.Settings;
@@ -42,12 +46,15 @@ namespace Pengin.AnimalManagement
                         {
                             var access=snapshot.Consumers.Select(p=>p.RaceProps.CanEverEat(def)&&FoodUtility.WillEat(p,def,p)).ToArray();
                             var candidate=new FeedCandidate(nutrition.value,access,int.MaxValue);
-                            var estimate=FeedActionPlanner.Plan(snapshot.Scenario,candidate,settings.TargetDays,
+                            hypotheticalPlan=FeedActionPlanner.Plan(snapshot.Scenario,candidate,settings.TargetDays,
                                 settings.PopulationScenario?settings.Births:0,settings.PopulationScenario?settings.Deaths:0,100000);
-                            list.Label("AM_HypotheticalPlan".Translate(def.LabelCap,estimate.Feasible?estimate.RequiredItems.ToString():"?",settings.TargetDays));
+                            hypotheticalDef=def;hypotheticalSource=snapshot;hypotheticalDays=settings.TargetDays;
                         }
                     }
                 }
+                if(hypotheticalPlan!=null&&hypotheticalSource==snapshot&&hypotheticalDays==settings.TargetDays)
+                    list.Label("AM_HypotheticalPlan".Translate(hypotheticalDef.LabelCap,
+                        hypotheticalPlan.Feasible?hypotheticalPlan.RequiredItems.ToString():"?",hypotheticalDays));
                 list.Label("AM_Provisional".Translate());
             }
             else
@@ -79,6 +86,7 @@ namespace Pengin.AnimalManagement
             {
                 list.GapLine();list.Label("AM_ActionHistory".Translate());
                 foreach(string entry in state.History)list.Label(entry);
+                if(settings.ProductionMode==ActionMode.Auto)list.Label("AM_LastAutoStatus".Translate(state.LastAutoReason.Translate()));
             }
         }
         void DrawProduction(Listing_Standard list,FeedForecast forecast,FeedAnchor anchor,FeedActionPlan plan)
