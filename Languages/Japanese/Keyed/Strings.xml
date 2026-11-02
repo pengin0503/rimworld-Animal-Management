@@ -95,4 +95,12 @@
   <AM_CapacityMode>適正飼育頭数の表示: {0}</AM_CapacityMode>
   <AM_HypotheticalPlan>食性だけに基づく未検証の推定：{0}を{1}個／{2}日分。保管場所・到達性は未確認で、自動生産には使用しません。</AM_HypotheticalPlan>
   <AM_ActionHistory>最近の確認付き・自動操作履歴（このマップ）：</AM_ActionHistory>
+  <AM_LastAutoStatus>直近の自動判定：{0}</AM_LastAutoStatus>
+  <AM_AutoNotEvaluated>まだ評価していません</AM_AutoNotEvaluated>
+  <AM_AutoIncomplete>予測が不完全、または計算に失敗</AM_AutoIncomplete>
+  <AM_AutoWeather>天候に依存するため、安全な生産を証明できません</AM_AutoWeather>
+  <AM_AutoUncertain>条件が不確実なため自動変更を停止</AM_AutoUncertain>
+  <AM_AutoNoAnchor>到達確認済みの飼料配送先がありません</AM_AutoNoAnchor>
+  <AM_AutoNoSafeAction>許可された安全な製造操作がありません</AM_AutoNoSafeAction>
+  <AM_AutoCreated>飼料の製造指示を作成しました</AM_AutoCreated>
 </LanguageData>
