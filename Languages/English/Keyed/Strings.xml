@@ -50,4 +50,26 @@
   <AM_AlertClick>Click to open the forecast.</AM_AlertClick>
   <AM_ShowAlert>Show an alert when a feed shortage is predicted</AM_ShowAlert>
   <AM_OpenWindow>Open forecast window</AM_OpenWindow>
+  <AM_Solutions>Solutions, winter reserves and production</AM_Solutions>
+  <AM_TargetDays>Reserve horizon: {0} days (click to change)</AM_TargetDays>
+  <AM_NoAnchor>No verified hay/kibble stack. Place permitted feed in an accessible storage area, then refresh. No access is assumed.</AM_NoAnchor>
+  <AM_FeedChoice>Replacement feed / destination: {0} (click to switch)</AM_FeedChoice>
+  <AM_CalculatePlan>Calculate replacement scenario</AM_CalculatePlan>
+  <AM_PlanConditions>Scenario: existing diets, shared human food, verified destination, seasonal growth and spoilage. Assumes all replacement feed is available at the start; this is not a delivery guarantee.</AM_PlanConditions>
+  <AM_PlanDeficit>Animal nutrition deficit: {0}</AM_PlanDeficit>
+  <AM_PlanCount>Additional reserve: {0} × {1} for {2} days</AM_PlanCount>
+  <AM_NoSolution>This feed/destination cannot cover every diet within the calculation limit. Choose another destination or feed.</AM_NoSolution>
+  <AM_Provisional>Provisional: weather, population, spoilage or incomplete observations prevent automatic actions.</AM_Provisional>
+  <AM_JumpFeed>Show verified feed destination</AM_JumpFeed>
+  <AM_ProductionConditions>Production is checked separately: an estimate is not proof of ingredients, a safe workbench or timely completion.</AM_ProductionConditions>
+  <AM_HayConditions>Hay growing: choose existing fertile growing zones and a viable growing season. Winter/cold growth and future weather cannot establish a guaranteed area or harvest date. No zones are created automatically.</AM_HayConditions>
+  <AM_SolutionMode>Reserve solutions: {0}</AM_SolutionMode>
+  <AM_ProductionMode>Feed production / herd planning: {0}</AM_ProductionMode>
+  <AM_ModeOff>OFF</AM_ModeOff>
+  <AM_ModeConfirm>Confirm</AM_ModeConfirm>
+  <AM_ModeAuto>Automatic (requires target permission)</AM_ModeAuto>
+  <AM_SafetyMargin>Production safety margin: {0}%</AM_SafetyMargin>
+  <AM_MaxItems>Maximum items per action: {0}</AM_MaxItems>
+  <AM_MaxBills>Maximum managed bills per map: {0}</AM_MaxBills>
+  <AM_Cooldown>Action cooldown: {0} days</AM_Cooldown>
 </LanguageData>

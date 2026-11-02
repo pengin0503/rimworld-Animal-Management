@@ -50,4 +50,26 @@
   <AM_AlertClick>クリックで予測を開きます。</AM_AlertClick>
   <AM_ShowAlert>飼料不足が予測されたらアラートを表示</AM_ShowAlert>
   <AM_OpenWindow>予測ウィンドウを開く</AM_OpenWindow>
+  <AM_Solutions>解決策・冬越し備蓄・生産計画</AM_Solutions>
+  <AM_TargetDays>備蓄目標：{0}日（クリックで変更）</AM_TargetDays>
+  <AM_NoAnchor>到達を確認できる干し草・キブルがありません。利用可能な保管場所に許可された飼料を置いて再計算してください。到達性は推測しません。</AM_NoAnchor>
+  <AM_FeedChoice>追加飼料・配送先：{0}（クリックで切替）</AM_FeedChoice>
+  <AM_CalculatePlan>追加飼料のシナリオを計算</AM_CalculatePlan>
+  <AM_PlanConditions>条件：既存の食性・人間との備蓄共有・確認済み配送先・季節成長・腐敗を反映。追加飼料は開始時に全量利用可能と仮定し、配送を保証しません。</AM_PlanConditions>
+  <AM_PlanDeficit>動物の不足栄養量：{0}</AM_PlanDeficit>
+  <AM_PlanCount>追加備蓄：{1} × {0}個（{2}日分）</AM_PlanCount>
+  <AM_NoSolution>この飼料・配送先では計算上限内に全食性の不足を解消できません。別の候補を選んでください。</AM_NoSolution>
+  <AM_Provisional>暫定：天候・頭数変動・腐敗・不完全な観測により自動操作を禁止します。</AM_Provisional>
+  <AM_JumpFeed>確認済み飼料の配送先へ移動</AM_JumpFeed>
+  <AM_ProductionConditions>生産条件は別に検証します。推計だけでは材料・安全な設備・期限内の完成を保証できません。</AM_ProductionConditions>
+  <AM_HayConditions>干し草栽培：肥沃な既存栽培区画と栽培期を確認してください。冬季・低温・将来の天候から必要面積や収穫日を保証できません。区画は自動新設しません。</AM_HayConditions>
+  <AM_SolutionMode>備蓄解決策：{0}</AM_SolutionMode>
+  <AM_ProductionMode>飼料生産・適正頭数：{0}</AM_ProductionMode>
+  <AM_ModeOff>OFF</AM_ModeOff>
+  <AM_ModeConfirm>確認付き</AM_ModeConfirm>
+  <AM_ModeAuto>自動（対象の許可も必要）</AM_ModeAuto>
+  <AM_SafetyMargin>生産の安全余裕：{0}%</AM_SafetyMargin>
+  <AM_MaxItems>1回の操作個数上限：{0}</AM_MaxItems>
+  <AM_MaxBills>マップごとの管理指示上限：{0}</AM_MaxBills>
+  <AM_Cooldown>操作クールダウン：{0}日</AM_Cooldown>
 </LanguageData>
