@@ -5,7 +5,7 @@
   <packageId>pengin0503.animalmanagement</packageId>
   <supportedVersions><li>1.7</li></supportedVersions>
   <modVersion>1.1.0</modVersion>
-  <description>Shows livestock counts and fed-rate daily nutrition demand by species and pen, stored feed shared with colonists and prisoners, spoilage, plants standing in pens and seasonal pasture growth, and gives conditional 7/15/30-day feed forecasts with stated assumptions and an alert when a complete forecast predicts a shortage. Forecasts are estimates, not guarantees. Information only: no automatic feeding, slaughter or setting changes.
+  <description>Livestock nutrition and seasonal feed forecasts for RimWorld 1.7, with 7/15/30-day reserve targets and sustainable herd size estimates. Offers confirmed or explicitly authorized bounded vanilla kibble production, protects player-owned bills, and optionally proposes protected auto-slaughter settings behind separate confirmation. Auto mode is opt-in; uncertain material use or incomplete scans block unsafe changes. New 1.1.0 gameplay behavior has not been verified in normal play.
 
-家畜の頭数と満腹時の1日の栄養需要を種別・放牧地別に表示します。入植者・囚人と共有する備蓄飼料、腐敗、放牧地に生えている植物、季節ごとの放牧地の成長も表示し、前提条件付きで7・15・30日の飼料収支を予測します。完全な予測で不足が見込まれるとアラートを出します。予測は推定であり、確定ではありません。表示専用で、自動給餌・自動屠殺・設定変更は行いません。</description>
+RimWorld 1.7向けの家畜栄養・季節別飼料予測MODです。7・15・30日の備蓄目標と持続可能な飼育頭数を提案し、バニラのキブル製造指示を確認付き、または個別許可済みの自動モードで支援します。手動指示を保護し、自動屠殺設定の変更には別途許可と確認が必要です。計算や材料選択が不確実な場合は自動操作を停止します。1.1.0の新機能は通常プレイでは未検証です。</description>
 </ModMetaData>
