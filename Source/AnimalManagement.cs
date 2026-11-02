@@ -46,6 +46,8 @@ namespace Pengin.AnimalManagement
     {
         public int Pool;
         public double PerItem;
+        // Stack size when the pool total was summed; the live stack may change later.
+        public int Count;
     }
     public sealed class FeedAnchor
     {
@@ -264,7 +266,7 @@ namespace Pengin.AnimalManagement
                     byAccess.Add(key,slot);stock.Add(slot.Pool);
                 }
                 slot.Pool.Nutrition+=perItem*item.stackCount;
-                result.Materials[item]=new FeedMaterial{Pool=slot.Index,PerItem=perItem};
+                result.Materials[item]=new FeedMaterial{Pool=slot.Index,PerItem=perItem,Count=item.stackCount};
                 result.FeedStacks++;result.StockNutrition+=perItem*item.stackCount;
             }
             result.AccessChecks=cache.Misses;

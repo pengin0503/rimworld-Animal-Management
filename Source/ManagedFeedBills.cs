@@ -110,28 +110,63 @@ namespace Pengin.AnimalManagement
             }
             if(double.IsInfinity(outputNutrition))return p;
             var producedFeed=new FeedCandidate(outputNutrition,outputAccess,anchor.Candidate.FreshDays);
-            var debits=new Dictionary<int,double>();
-            // Vanilla may select another stack of the permitted def. Debit the worst-case
-            // amount from EVERY reachable pool, not merely the displayed ingredient stacks.
-            foreach(var def in permitted)
-            {
-                if(recipe.ingredients.Count(i=>i.filter.Allows(def))!=1)return p;
-                int count=p.Ingredients.Where(c=>c.Key.def==def).Sum(c=>c.Value);
-                foreach(var group in snap.Materials.Where(c=>c.Key.def==def).GroupBy(c=>c.Value.Pool))
-                {
-                    double total=group.Sum(c=>c.Key.stackCount*c.Value.PerItem);
-                    debits[group.Key]=Math.Min(total,count*group.Max(c=>c.Value.PerItem));
-                }
-            }
+            var debit=BoundIngredientRemoval(snap,recipe,permitted,p.Batches);
+            if(debit==null)return p;
+            if(debit.Blocked!=null){p.Blocked=debit.Blocked;return p;}
             // Ingredients are consumed by production: prove net benefit with the SAME allocation.
             var beforeProjection=snap.Scenario.Run(plan.Horizon,0,0);
-            var after=snap.Scenario.Convert(plan.Horizon,producedFeed,p.Items,debits);
+            var after=snap.Scenario.Convert(plan.Horizon,producedFeed,p.Items,debit);
             if(snap.Scenario.AnimalDeficit(after)>=snap.Scenario.AnimalDeficit(beforeProjection)-1e-6||
                 snap.Scenario.HumanDeficit(after)>snap.Scenario.HumanDeficit(beforeProjection)+1e-6)return p;
-            var withoutOutput=snap.Scenario.Convert(plan.Horizon,producedFeed,0,debits);
+            var withoutOutput=snap.Scenario.Convert(plan.Horizon,producedFeed,0,debit);
             p.DelaySafe=snap.Scenario.HumanDeficit(withoutOutput)<=snap.Scenario.HumanDeficit(beforeProjection)+1e-6&&
                 snap.Scenario.AnimalDeficit(withoutOutput)<=snap.Scenario.AnimalDeficit(beforeProjection)+1e-6;
             p.Blocked=null;return p;
+        }
+        // Vanilla does not use the previewed stacks. With allowMixingIngredients it gathers, per
+        // batch and ingredient, ANY reachable unforbidden stacks of every def the bill allows,
+        // ordered by nutrition value then distance, until the base count is met; the last stack
+        // overshoots by less than one unit (WorkGiver_DoBill.TryFindBestBillIngredientsInSet_AllowMix,
+        // RimWorld 1.7.4985). Bound that removal for every candidate stack in the forecast and
+        // let IngredientDebit refuse any choice it cannot pin to one pool. Null = unprovable.
+        static MaterialDebit BoundIngredientRemoval(ForecastSnapshot snap,RecipeDef recipe,HashSet<ThingDef> permitted,int batches)
+        {
+            var getter=recipe.IngredientValueGetter;if(getter==null)return null;
+            var demands=new List<IngredientDemand>();var owner=new Dictionary<ThingDef,int>();
+            var unit=new Dictionary<ThingDef,double>();var maxUnit=new List<double>();
+            for(int i=0;i<recipe.ingredients.Count;i++)
+            {
+                var ingredient=recipe.ingredients[i];
+                // A fixed ingredient ignores the bill's filter; any other uses only allowed defs.
+                var defs=ingredient.IsFixedIngredient?new List<ThingDef>{ingredient.FixedIngredient}:permitted.Where(d=>ingredient.filter.Allows(d)).ToList();
+                double largest=0;
+                foreach(var def in defs)
+                {
+                    // A def satisfying two ingredients could be drawn by either: not bounded.
+                    if(def==null||recipe.ingredients.Count(x=>x.filter.Allows(def))!=1||owner.ContainsKey(def))return null;
+                    double value=getter.ValuePerUnitOf(def);
+                    if(double.IsNaN(value)||double.IsInfinity(value)||value<=0)return null;
+                    owner[def]=i;unit[def]=value;largest=Math.Max(largest,value);
+                }
+                demands.Add(new IngredientDemand());maxUnit.Add(largest);
+            }
+            var ratio=new double[demands.Count];
+            foreach(var entry in snap.Materials)
+            {
+                int i;if(!owner.TryGetValue(entry.Key.def,out i))continue;
+                if(entry.Value.Count<=0)continue;
+                ratio[i]=Math.Max(ratio[i],entry.Value.PerItem/unit[entry.Key.def]);
+                demands[i].Sources.Add(new IngredientSource(entry.Value.Pool,entry.Value.Count*entry.Value.PerItem));
+            }
+            for(int i=0;i<demands.Count;i++)
+            {
+                double baseCount=recipe.ingredients[i].GetBaseCount();
+                if(double.IsNaN(baseCount)||double.IsInfinity(baseCount)||baseCount<0)return null;
+                // Stat units removed per batch < base + largest unit; forecast units scale by
+                // at most the largest per-stack forecast/stat ratio.
+                demands[i].MaxRemoval=batches*(baseCount+maxUnit[i])*ratio[i];
+            }
+            return snap.Scenario.Debit(demands);
         }
         public static bool Execute(Map map,FeedProductionPreview shown,bool automatic)
         {

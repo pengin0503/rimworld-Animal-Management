@@ -74,6 +74,8 @@
   <AM_Cooldown>操作クールダウン：{0}日</AM_Cooldown>
   <AM_ProductionBlocked>生産不可：完全で信頼できる予測、対応するバニラのレシピ・設備、到達可能な許可済み材料、保管先、材料消費を含めた栄養改善が必要です。</AM_ProductionBlocked>
   <AM_DuplicateBill>同じレシピの既存指示があります。変更・重複作成しません。</AM_DuplicateBill>
+  <AM_IngredientPools>生産不可：材料として使われ得るスタックが、到達可能な消費者や腐敗期限の異なる食料グループに分かれています。バニラが実際に選ぶ材料で入植者・動物の食料が悪化しないことを証明できません。</AM_IngredientPools>
+  <AM_IngredientUnbounded>生産不可：予測から材料消費量の上限を確定できません（未対応のレシピまたは材料値）。</AM_IngredientUnbounded>
   <AM_HayArea>全量収穫の参考：{0}マス、基本成長{1}日。地域の成長時間・肥沃度・損失・低温を含まないため必要面積の保証ではありません。</AM_HayArea>
   <AM_BenchChoice>設備：{0}（クリックで切替）</AM_BenchChoice>
   <AM_PreviewProduction>材料を確認して生産プレビュー</AM_PreviewProduction>

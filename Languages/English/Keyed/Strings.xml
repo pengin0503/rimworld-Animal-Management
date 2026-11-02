@@ -74,6 +74,8 @@
   <AM_Cooldown>Action cooldown: {0} days</AM_Cooldown>
   <AM_ProductionBlocked>Production blocked: a complete reliable forecast, safe vanilla recipe/bench, accessible permitted ingredients, storage and a proven net nutrition benefit are required.</AM_ProductionBlocked>
   <AM_DuplicateBill>An existing bill already uses this recipe. It will not be changed or duplicated.</AM_DuplicateBill>
+  <AM_IngredientPools>Production blocked: an ingredient's permitted stacks lie in food groups with different access or spoilage, so the ingredients vanilla will actually pick cannot be proved safe for colonists and animals.</AM_IngredientPools>
+  <AM_IngredientUnbounded>Production blocked: the ingredient consumption could not be bounded from the forecast (unsupported recipe or ingredient values).</AM_IngredientUnbounded>
   <AM_HayArea>Illustrative full harvest: {0} cells; base growth {1} days. Does not account for local growing hours, fertility, losses or cold; not a guaranteed field size.</AM_HayArea>
   <AM_BenchChoice>Workbench: {0} (click to change)</AM_BenchChoice>
   <AM_PreviewProduction>Check ingredients and preview production</AM_PreviewProduction>
