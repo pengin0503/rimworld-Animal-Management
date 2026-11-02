@@ -67,6 +67,18 @@ static class Program
         var multi=NutritionForecast.Run(d,new List<FeedPool>{F(20,true,true)},None,new[]{7,15,30},0,0);
         var single=NutritionForecast.Run(d,new List<FeedPool>{F(20,true,true)},None,15,0,0);
         Check(multi[1].FirstShortageDay==single.FirstShortageDay&&Math.Abs(multi[1].StockConsumed-single.StockConsumed)<1e-9&&multi[0].Horizon==7&&multi[2].CoveredWholeDays==single.CoveredWholeDays,"one simulation serves every horizon");
+        var scenario=new FeedScenario(d,new List<FeedPool>{F(10,true,true)},day=>None(day),true);
+        var plan=FeedActionPlanner.Plan(scenario,new FeedCandidate(1,new[]{true,true},int.MaxValue),7,0,0,100);
+        Check(plan.Feasible&&plan.RequiredItems==4,"what-if shares one additional stock across two species");
+        Check(scenario.Run(7,0,0).StockConsumed==10,"planner preserves snapshot");
+        Check(!FeedActionPlanner.Plan(scenario,new FeedCandidate(1,new[]{true,false},99),7,0,0,100).Feasible,"cannot cure incompatible diet");
+        Check(!FeedActionPlanner.Plan(new FeedScenario(d,pools,None,false),new FeedCandidate(1,new[]{true,true},99),7,0,0,100).Reliable,"partial snapshots cannot authorize changes");
+        Check(!FeedActionPlanner.Plan(scenario,new FeedCandidate(1,new[]{true,true},1),7,0,0,100).Feasible,"spoiling replacement cannot cover winter");
+        foreach(int horizon in new[]{7,15,30})
+        {
+            var winter=new FeedScenario(new[]{D(1)},new List<FeedPool>(),None,true);
+            Check(FeedActionPlanner.Plan(winter,new FeedCandidate(.5,new[]{true},99),horizon,0,0,100).RequiredItems==horizon*2,"winter zero-growth target "+horizon);
+        }
         var timer=System.Diagnostics.Stopwatch.StartNew();
         var many=new List<Demand>();for(int i=0;i<100;i++)many.Add(D(1));
         var access=new bool[100];Array.Fill(access,true);
