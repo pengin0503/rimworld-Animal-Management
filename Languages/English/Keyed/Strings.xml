@@ -83,4 +83,13 @@
   <AM_CreateProduction>Create instruction (confirmation)</AM_CreateProduction>
   <AM_ProductionConfirm>Create a managed instruction for up to {0} items at {1}? It consumes the previewed ingredients and reserves this destination. No manual bills are changed. It stops on expiry or satisfaction.</AM_ProductionConfirm>
   <AM_ActionChanged>Conditions changed or the action limit/cooldown blocked execution. Refresh the preview.</AM_ActionChanged>
+  <AM_CapacityConditions>Capacity scenario: other species and humans stay fixed, shared food counted once. Species estimates are alternatives, not additive. Future births and aging are uncertain; population scenarios use proportional demand.</AM_CapacityConditions>
+  <AM_CapacitySpecies>Herd species: {0} (click to change)</AM_CapacitySpecies>
+  <AM_CalculateCapacity>Calculate sustainable herd scenario</AM_CalculateCapacity>
+  <AM_CapacityUnsolved>Reducing this species alone cannot eliminate the other animals’ shortage.</AM_CapacityUnsolved>
+  <AM_CapacityResult>Current {0}; scenario capacity {1} for {2} days; possible excess {3}.</AM_CapacityResult>
+  <AM_CapacityBound>Calculation cap reached (400); no higher capacity is asserted.</AM_CapacityBound>
+  <AM_AllowSlaughter>Allow confirmed auto-slaughter configuration previews (may lead to irreversible slaughter)</AM_AllowSlaughter>
+  <AM_SlaughterPreview>Preview total slaughter limit: {0} → {1}</AM_SlaughterPreview>
+  <AM_SlaughterConfirm>Change {0} total limit from {1} to {2}? Vanilla may then slaughter animals irreversibly. Pregnant/bonded animals will be protected; other sex/age limits remain. This requires confirmation even in Auto mode.</AM_SlaughterConfirm>
 </LanguageData>

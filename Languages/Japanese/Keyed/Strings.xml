@@ -83,4 +83,13 @@
   <AM_CreateProduction>製造指示を作成（確認）</AM_CreateProduction>
   <AM_ProductionConfirm>{1}に最大{0}個分の管理指示を作成しますか？表示した材料を消費し、配送先を指定します。手動指示は変更しません。期限または目標達成で停止します。</AM_ProductionConfirm>
   <AM_ActionChanged>条件が変化したか、操作上限・クールダウンに達しました。プレビューを更新してください。</AM_ActionChanged>
+  <AM_CapacityConditions>頭数シナリオ：他種・人間の需要を固定し、共有飼料は一度だけ配分。種別の推計は代替案であり合算できません。繁殖・成長は不確実で、頭数変動は比例需要の仮定です。</AM_CapacityConditions>
+  <AM_CapacitySpecies>動物種：{0}（クリックで切替）</AM_CapacitySpecies>
+  <AM_CalculateCapacity>維持可能頭数のシナリオを計算</AM_CalculateCapacity>
+  <AM_CapacityUnsolved>この種だけを減らしても他の動物の不足を解消できません。</AM_CapacityUnsolved>
+  <AM_CapacityResult>現在{0}頭、{2}日間のシナリオ上限{1}頭、超過候補{3}頭。</AM_CapacityResult>
+  <AM_CapacityBound>計算上限400頭に到達。これを超える維持可能性は断定しません。</AM_CapacityBound>
+  <AM_AllowSlaughter>自動屠殺設定の確認付き変更を許可（不可逆な屠殺につながる可能性）</AM_AllowSlaughter>
+  <AM_SlaughterPreview>自動屠殺の総数上限をプレビュー：{0} → {1}</AM_SlaughterPreview>
+  <AM_SlaughterConfirm>{0}の総数上限を{1}から{2}へ変更しますか？バニラが不可逆な屠殺を行う可能性があります。妊娠・絆のある個体を保護し、性別・年齢別上限は維持します。自動モードでも毎回確認します。</AM_SlaughterConfirm>
 </LanguageData>
