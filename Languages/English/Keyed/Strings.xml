@@ -105,6 +105,7 @@
   <AM_AutoNoAnchor>No verified destination for feed</AM_AutoNoAnchor>
   <AM_AutoNoSafeAction>No permitted safe production action</AM_AutoNoSafeAction>
   <AM_AutoCreated>Feed production instruction created</AM_AutoCreated>
+  <AM_BillStopping>current batch still in progress; new batches stopped, bill removed when its job ends</AM_BillStopping>
   <AM_BillCompleted>production finished; bill removed, next replenishment allowed</AM_BillCompleted>
   <AM_BillExpired>one-day assistance window ended; unchanged bill removed, next replenishment allowed</AM_BillExpired>
   <AM_BillWithdrawn>mode, permission or reliable forecast no longer authorizes it; bill removed</AM_BillWithdrawn>

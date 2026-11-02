@@ -52,6 +52,12 @@ static class OwnershipTests
         Check(C(-1,3)==OwnedBillState.Unverified,"unknown legacy progress is not trusted");
         // Manual intervention outranks expiry or completion.
         Check(C(0,0,suspended:true,expired:true)==OwnedBillState.Suspended&&C(1,1,match:false,expired:true)==OwnedBillState.ManualEdit,"manual state wins over natural end");
+        // Our bill still used by a job (e.g. carrying the product) is stopped, then removed.
+        Check(ManagedBillPolicy.Settle(OwnedBillState.Owned,OwnedBillState.Expired)==OwnedBillState.Expired,"stop in progress keeps its reason");
+        Check(ManagedBillPolicy.Settle(OwnedBillState.Completed,OwnedBillState.Expired)==OwnedBillState.Completed,"last batch finishing during a stop is completion");
+        Check(ManagedBillPolicy.Settle(OwnedBillState.ManualEdit,OwnedBillState.Withdrawn)==OwnedBillState.ManualEdit&&
+            ManagedBillPolicy.Settle(OwnedBillState.Missing,OwnedBillState.Completed)==OwnedBillState.Missing,"manual intervention during a stop wins");
+        Check(ManagedBillPolicy.Settle(OwnedBillState.Expired,null)==OwnedBillState.Expired,"no stop in progress");
         var lost=C(3,3,bench:false);
         Check(lost==OwnedBillState.BenchLost&&!ManagedBillPolicy.Revokes(lost)&&!ManagedBillPolicy.RemovesOwnBill(lost),"lost bench is released untouched");
 

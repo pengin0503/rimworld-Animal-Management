@@ -28,7 +28,7 @@ class Program
                 throw new Exception("Animal settings Scribe round trip failed");
             Console.WriteLine("PASS real-game Scribe animal settings round trip (not map save/load)");
             // #21: managed bill entry, new fields and a 1.1.0 entry without them.
-            var entry=new ManagedFeedBill{BillId="Bill_7",Fingerprint="v2|x",Expires=123,Automatic=true,Permission="p",Batches=3,LastSeen=2};
+            var entry=new ManagedFeedBill{BillId="Bill_7",Fingerprint="v2|x",Expires=123,Automatic=true,Permission="p",Batches=3,LastSeen=2,StopState=(int)OwnedBillState.Expired};
             var legacy=new ManagedFeedBill{BillId="Bill_8",Fingerprint="a=1|repeatCount=4|repeatMode=RepeatCount|index=0",Expires=9};
             Scribe.saver.InitSaving(path,"fixture");Scribe_Deep.Look(ref entry,"entry");Scribe_Deep.Look(ref legacy,"legacy");Scribe.saver.FinalizeSaving();
             string xml=File.ReadAllText(path).Replace("<batches>-1</batches>","").Replace("<lastSeenRepeatCount>-1</lastSeenRepeatCount>","");
@@ -38,7 +38,7 @@ class Program
             // type lookup and cross-reference resolution need a running game and are skipped.
             Scribe.loader.InitLoading(path);entry=LoadEntry("entry");legacy=LoadEntry("legacy");
             Scribe.mode=LoadSaveMode.PostLoadInit;entry.ExposeData();legacy.ExposeData();Scribe.loader.ForceStop();
-            if(entry.BillId!="Bill_7"||entry.Batches!=3||entry.LastSeen!=2||!entry.Automatic||entry.Expires!=123)throw new Exception("managed bill round trip failed");
+            if(entry.BillId!="Bill_7"||entry.Batches!=3||entry.LastSeen!=2||entry.StopState!=(int)OwnedBillState.Expired||legacy.StopState!=-1||!entry.Automatic||entry.Expires!=123)throw new Exception("managed bill round trip failed");
             if(legacy.Batches!=4||legacy.LastSeen!=4||legacy.Expires!=9)throw new Exception("legacy managed bill progress not recovered");
             Console.WriteLine("PASS real-game Scribe managed bill round trip incl. 1.1.0 entry");
             // The fingerprint excludes exactly the fields vanilla changes during normal work.

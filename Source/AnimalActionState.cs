@@ -14,6 +14,8 @@ namespace Pengin.AnimalManagement
         public string Permission;
         // Batches requested and the repeat count last confirmed as ours (-1: unknown).
         public int Batches=-1,LastSeen=-1;
+        // Set while our bill is being stopped but a pawn's job still uses it (-1: none).
+        public int StopState=-1;
         // Runtime only: the resolved bill and the pawn last seen working it at the bench.
         internal Bill_Production Bill;
         internal Pawn Worker;
@@ -23,6 +25,7 @@ namespace Pengin.AnimalManagement
             Scribe_References.Look(ref Bench,"bench");Scribe_Values.Look(ref BillId,"billId","");Scribe_Values.Look(ref Fingerprint,"fingerprint","");
             Scribe_Values.Look(ref Expires,"expires",0);Scribe_Values.Look(ref Automatic,"automatic",false);Scribe_Values.Look(ref Permission,"permission","");
             Scribe_Values.Look(ref Batches,"batches",-1);Scribe_Values.Look(ref LastSeen,"lastSeenRepeatCount",-1);
+            Scribe_Values.Look(ref StopState,"stopState",-1);
             // 1.1.0 entries stored the creation count only inside the fingerprint.
             if(Scribe.mode==LoadSaveMode.PostLoadInit&&LastSeen<0)
             {
@@ -111,8 +114,11 @@ namespace Pengin.AnimalManagement
                 var bill=bench?Resolve(entry):null;
                 bool authorized=settings!=null&&settings.ProductionMode!=ActionMode.Off&&
                     (!entry.Automatic||(settings.ProductionMode==ActionMode.Auto&&Permissions.Contains(entry.Permission)))&&reliable;
-                var state=ManagedBillPolicy.Classify(bench,bill!=null,bill!=null&&ManagedFeedBills.MatchesSettings(entry.Fingerprint,bill),
-                    bill!=null&&bill.suspended,entry.LastSeen,bill==null?-1:bill.repeatCount,now>=entry.Expires,authorized);
+                OwnedBillState? stopping=entry.StopState>=0?(OwnedBillState)entry.StopState:(OwnedBillState?)null;
+                // While we stop our own bill its suspension is ours, and part of its fingerprint.
+                var observed=ManagedBillPolicy.Classify(bench,bill!=null,bill!=null&&ManagedFeedBills.MatchesSettings(entry.Fingerprint,bill),
+                    bill!=null&&bill.suspended&&stopping==null,entry.LastSeen,bill==null?-1:bill.repeatCount,now>=entry.Expires,authorized);
+                var state=ManagedBillPolicy.Settle(observed,stopping);
                 if(state==OwnedBillState.Owned)
                 {
                     // Upgrade a 1.1.0 fingerprint once it has been verified against the bill.
@@ -121,10 +127,31 @@ namespace Pengin.AnimalManagement
                 }
                 // Only our own, unchanged bill is removed; an edited, suspended or foreign
                 // state is left exactly as the player or other mod set it.
-                if(ManagedBillPolicy.RemovesOwnBill(state)&&bill!=null)entry.Bench.BillStack.Delete(bill);
+                if(ManagedBillPolicy.RemovesOwnBill(state)&&bill!=null)
+                {
+                    // Deleting a bill fails the DoBill job using it (JobDriver_DoBill FailOn
+                    // DeletedOrDereferenced), dropping carried ingredients or the finished product.
+                    // Stop new batches and remove it once no job uses it.
+                    if(BillInUse(bill))
+                    {
+                        if(stopping==null)
+                        {
+                            if(bill.repeatCount>0&&!bill.suspended){bill.suspended=true;entry.Fingerprint=ManagedFeedBills.Fingerprint(bill);}
+                            entry.StopState=(int)state;AddHistory(entry.BillId+" AM_BillStopping");
+                        }
+                        continue;
+                    }
+                    entry.Bench.BillStack.Delete(bill);
+                }
                 if(ManagedBillPolicy.Revokes(state)&&entry.Bench!=null&&!Revoked.Contains(entry.Bench.ThingID))Revoked.Add(entry.Bench.ThingID);
                 Managed.RemoveAt(i);AddHistory(entry.BillId+" "+ManagedBillPolicy.HistoryKey(state));
             }
+        }
+        bool BillInUse(Bill_Production bill)
+        {
+            var pawns=map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
+            for(int i=0;i<pawns.Count;i++)if(pawns[i].CurJob!=null&&pawns[i].CurJob.bill==bill)return true;
+            return false;
         }
         public override void MapComponentTick()
         {

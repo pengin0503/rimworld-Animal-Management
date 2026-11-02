@@ -38,6 +38,13 @@ namespace Pengin.AnimalManagement
             if(expired)return OwnedBillState.Expired;
             return authorized?OwnedBillState.Owned:OwnedBillState.Withdrawn;
         }
+        // A stop already in progress (our bill waiting for its last job) keeps its reason
+        // unless the bill completed meanwhile or someone else intervened.
+        public static OwnedBillState Settle(OwnedBillState observed,OwnedBillState? stopping)
+        {
+            if(stopping==null)return observed;
+            return observed==OwnedBillState.Owned||observed==OwnedBillState.Expired||observed==OwnedBillState.Withdrawn?stopping.Value:observed;
+        }
         public static bool Revokes(OwnedBillState s)
         {return s==OwnedBillState.ManualEdit||s==OwnedBillState.Unverified||s==OwnedBillState.Suspended||s==OwnedBillState.Missing;}
         // Only a bill whose settings still match ours and that nobody suspended is removed.
