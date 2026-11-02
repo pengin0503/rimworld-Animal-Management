@@ -11,7 +11,7 @@ static class Program
     static List<FeedPool> None(int day) {return new List<FeedPool>();}
     static void Main()
     {
-        OwnershipTests.Run();HerdTests.Run();AccessSignatureTests.Run();IngredientDebitTests.Run();WeatherSafetyTests.Run();
+        OwnershipTests.Run();HerdTests.Run();AccessSignatureTests.Run();IngredientDebitTests.Run();WeatherSafetyTests.Run();PerformanceTests.Run();
         var d=new List<Demand>{D(1),D(1)};
         var pools=new List<FeedPool>{F(10,true,true)};
         var r=NutritionForecast.Run(d,pools,None,7,0,0);
