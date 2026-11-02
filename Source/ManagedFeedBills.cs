@@ -89,7 +89,10 @@ namespace Pengin.AnimalManagement
         {
             var p=new FeedProductionPreview{Bench=bench,Anchor=anchor};
             var s=AnimalManagementMod.Settings;var snap=forecast.Snapshot;
-            if(!SafeBench(bench,map)||forecast.Failed||snap.Partial||snap.Scenario==null||!plan.Feasible||!plan.Reliable||plan.RequiredItems==0||snap.SettingsSignature!=s.Signature)return p;
+            bool regular=snap.Scenario!=null&&snap.Scenario.Reliable;
+            bool bounded=snap.NoGrazingScenario!=null&&snap.NoGrazingScenario.Reliable;
+            if(!SafeBench(bench,map)||forecast.Failed||snap.Partial||snap.Scenario==null||!plan.Feasible||
+                !(regular||bounded)||plan.RequiredItems==0||snap.SettingsSignature!=s.Signature)return p;
             if(!anchor.Stack.Spawned||anchor.Stack.Map!=map||anchor.Stack.IsForbidden(Faction.OfPlayer))return p;
             SlotGroup storage=anchor.Stack.GetSlotGroup();
             if(storage==null||!storage.Settings.AllowedToAccept(anchor.Stack))return p;
@@ -154,9 +157,13 @@ namespace Pengin.AnimalManagement
             var after=snap.Scenario.Convert(plan.Horizon,producedFeed,p.Items,debit);
             if(snap.Scenario.AnimalDeficit(after)>=snap.Scenario.AnimalDeficit(beforeProjection)-1e-6||
                 snap.Scenario.HumanDeficit(after)>snap.Scenario.HumanDeficit(beforeProjection)+1e-6)return p;
+            if(!regular&&!WeatherFeedSafety.CanImprove(snap.Scenario,snap.NoGrazingScenario,
+                producedFeed,p.Items,debit,plan.Horizon))return p;
             var withoutOutput=snap.Scenario.Convert(plan.Horizon,producedFeed,0,debit);
             p.DelaySafe=snap.Scenario.HumanDeficit(withoutOutput)<=snap.Scenario.HumanDeficit(beforeProjection)+1e-6&&
                 snap.Scenario.AnimalDeficit(withoutOutput)<=snap.Scenario.AnimalDeficit(beforeProjection)+1e-6;
+            if(!regular)p.DelaySafe=p.DelaySafe&&WeatherFeedSafety.DelaySafe(snap.Scenario,snap.NoGrazingScenario,
+                producedFeed,debit,plan.Horizon);
             p.Blocked=null;return p;
         }
         // Vanilla does not use the previewed stacks. With allowMixingIngredients it gathers, per
@@ -218,7 +225,7 @@ namespace Pengin.AnimalManagement
             state.CheckOwnership();int now=Find.TickManager.TicksGame;
             bool allowed=state.Permissions.Contains(PermissionKey(shown.Bench,anchor));
             var mode=automatic?s.ProductionMode:s.ProductionMode==ActionMode.Off?ActionMode.Off:ActionMode.Confirm;
-            if(!ManagedBillPolicy.CanCreate(mode,allowed,snap.Scenario.Reliable,false,state.Managed.Count,s.MaxBills,now,state.LastAction,s.Cooldown)||state.Revoked.Contains(shown.Bench.ThingID))return false;
+            if(!ManagedBillPolicy.CanCreate(mode,allowed,snap.Scenario.Reliable||snap.NoGrazingScenario!=null,false,state.Managed.Count,s.MaxBills,now,state.LastAction,s.Cooldown)||state.Revoked.Contains(shown.Bench.ThingID))return false;
             var bill=new Bill_Production(next.Recipe){repeatMode=BillRepeatModeDefOf.RepeatCount,repeatCount=next.Batches};
             bill.ingredientFilter.SetDisallowAll();foreach(var def in next.Ingredients.Keys.Select(t=>t.def).Distinct())bill.ingredientFilter.SetAllow(def,true);
             bill.SetIncludeGroup(anchor.Stack.GetSlotGroup());

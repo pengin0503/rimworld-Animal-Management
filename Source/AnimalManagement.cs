@@ -61,6 +61,9 @@ namespace Pengin.AnimalManagement
         public bool Partial;
         public string SettingsSignature;
         public FeedScenario Scenario;
+        // Conservative stock-only projection for a bounded weather safety check.
+        // Never includes speculative future grazing or unverified roamers.
+        public FeedScenario NoGrazingScenario;
         public Dictionary<Thing,FeedMaterial> Materials=new Dictionary<Thing,FeedMaterial>();
         public List<Pawn> Consumers;
         public List<FeedAnchor> Anchors=new List<FeedAnchor>();
@@ -329,6 +332,12 @@ namespace Pengin.AnimalManagement
             result.WeatherDependent=result.StandingNutrition>0||result.RoamingGrazers>0||growthByDay.Values.Any(g=>g.Any(p=>p.Nutrition>0))||stock.Any(p=>p.LastFreshDay<30);
             result.Scenario=new FeedScenario(demands,stock.Concat(standing).ToList(),day=>growthByDay[day],
                 !result.Partial&&!result.WeatherDependent&&!settings.IncludeForbidden&&!settings.PopulationScenario);
+            // The observed forecast is advisory under weather uncertainty. For a
+            // real action, use a separate independent no-grazing lower bound.
+            // We do not model roamers, forbidden stock or uncertain spoilage as safe.
+            if(!result.Partial&&!settings.IncludeForbidden&&!settings.PopulationScenario&&
+                result.RoamingGrazers==0&&!stock.Any(pool=>pool.LastFreshDay<30))
+                result.NoGrazingScenario=new FeedScenario(demands,stock,day=>new List<FeedPool>(),true);
             // A pen whose animals share stored feed with other consumers has an
             // allocation-dependent shortage date: the shared feed could go either way.
             var sharedPens=new HashSet<CompAnimalPenMarker>();

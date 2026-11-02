@@ -112,7 +112,8 @@ namespace Pengin.AnimalManagement
             if(Managed.Count>0&&forecast!=null&&!forecast.Failed&&forecast.Snapshot.Scenario==null)forecast.Recalculate();
             bool available=forecast!=null&&(forecast.Failed||forecast.Snapshot.Scenario!=null);
             bool reliable=ManagedBillPolicy.ForecastAuthorizes(available,available&&forecast.Failed,available&&forecast.Snapshot.Partial,
-                available&&forecast.Snapshot.Scenario!=null&&forecast.Snapshot.Scenario.Reliable);
+                available&&forecast.Snapshot.Scenario!=null&&
+                (forecast.Snapshot.Scenario.Reliable||forecast.Snapshot.NoGrazingScenario!=null));
             for(int i=Managed.Count-1;i>=0;i--)
             {
                 var entry=Managed[i];
@@ -175,7 +176,7 @@ namespace Pengin.AnimalManagement
             var f=map.GetComponent<FeedForecast>();f.Recalculate();var snap=f.Snapshot;
             if(f.Failed||snap.Partial||snap.Scenario==null)
             {SetAutoReason("AM_AutoIncomplete");return;}
-            if(!snap.Scenario.Reliable)
+            if(!snap.Scenario.Reliable&&snap.NoGrazingScenario==null)
             {SetAutoReason(snap.WeatherDependent?"AM_AutoWeather":"AM_AutoUncertain");return;}
             foreach(var anchor in snap.Anchors.Take(4))
             {
