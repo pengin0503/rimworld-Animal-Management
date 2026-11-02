@@ -200,3 +200,11 @@ Baseline main `60700e4`. Evidence source: R2 `Game-Linux/Version.txt` = `1.7.498
 ### Checks run
 - Local: `validate_package.py`; `Tests` (58 lifecycle, 6 herd, 4 access, 6,516 ingredient-debit incl. 6,000 randomized, 38 nutrition); Release build against public references and against the real 1.7.4985 DLLs; `Tests.Game` compile (public) and execution (real DLLs); `package_dev.py`.
 - **Not verified:** normal in-game bill creation/completion/hauling, whole-map save/load with cross-reference resolution, 270+ MOD loadout, TPS/GC. Remains under #6.
+
+
+## Final review remediation — remaining issues #20 and #23 (2026-11-02)
+- #20: Weather-dependent forecast `Scenario` remains advisory. An independent verified stock-only/no-grazing scenario is built only when the scan is complete, no roamers, no forbidden stock, no population scenario, and no stock with uncertain expiration within 30 days. A production candidate is required to improve the forecast **both** under the observed seasonal projection and under no grazing while preserving nutrition for **each** consumer; every unsupported case remains blocked. Execute re-scans and rechecks ingredient debit, ownership and explicit permission. No widening of arbitrary recipe types.
+- #23: `AccessSignature` replaced per-item string masks earlier; this change additionally reuses immutable `FeedScenario` demand arrays and removes one redundant baseline simulation during planning. Key-only synthetic benchmark (not a game scan) at 400 consumers / 12,000 stacks: old 30,340,624 allocated bytes / 97.36 ms; new 13,192 bytes / 32.28 ms in the CI environment. The values are one run and **not** a claim of game TPS improvement.
+- Tests: six weather scenario assertions including per-species non-worsening (RED on aggregate-only safety policy, GREEN after fix); old ownership, ingredient choice and planning tests continue.
+- CI: source and game-fixture compilation, package and language validation run on public reference assemblies, no original game binaries uploaded.
+- Still unverified: full live-game bill and grazing behavior, full-map GC/TPS, 270+ MOD compatibility and real save/load. This does not block closure of implemented issues per user request; record in pre-existing #6.
