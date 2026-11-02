@@ -12,6 +12,18 @@ static class HerdTests
         if(HerdCapacityPlanner.Calculate(limited,new[]{true,false},7,10,0,0).Feasible)throw new Exception("other species diet cannot borrow surplus");
         if(HerdCapacityPlanner.Calculate(scenario,new[]{true,false},30,10,0,0).Feasible)throw new Exception("winter reserve limits capacity");
         if(HerdCapacityPlanner.Calculate(scenario,new[]{true,false},7,10,5,0).Sustainable>=r.Sustainable)throw new Exception("birth scenario reduces headroom");
-        Console.WriteLine("PASS 4 herd capacity scenarios");
+        // An unrelated hungry species must not prevent evaluating a fully-fed species.
+        var independent=new FeedScenario(new[]{new Demand{Daily=1},new Demand{Daily=1}},
+            new[]{new FeedPool{Nutrition=21,Access=new[]{false,true}}},d=>new List<FeedPool>(),true);
+        var independentCap=HerdCapacityPlanner.Calculate(independent,new[]{false,true},7,10,0,0);
+        if(!independentCap.Feasible||independentCap.Sustainable!=3)
+            throw new Exception("unrelated hunger must not make fed species unsolved");
+        // A capacity increase must never steal shared stock from a different hungry species.
+        var shared=new FeedScenario(new[]{new Demand{Daily=2},new Demand{Daily=1}},
+            new[]{new FeedPool{Nutrition=7,Access=new[]{true,true}}},d=>new List<FeedPool>(),true);
+        var shareCap=HerdCapacityPlanner.Calculate(shared,new[]{false,true},7,10,0,0);
+        if(!shareCap.Feasible||shareCap.Sustainable>1)
+            throw new Exception("other species shortage cannot be made worse");
+        Console.WriteLine("PASS 6 herd capacity scenarios");
     }
 }
