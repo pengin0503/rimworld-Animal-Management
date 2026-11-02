@@ -85,6 +85,9 @@ static class Program
         Check(conversion.HumanDeficit(converted)==0&&conversion.AnimalDeficit(converted)==0,"conversion debits ingredients before adding output");
         Check(conversion.HumanDeficit(conversion.Convert(7,new FeedCandidate(1,new[]{false,true},99),7,new Dictionary<int,double>{{0,7}}))>0,"human diet change can make a conversion unsafe");
         Check(conversion.Run(7,0,0).StockConsumed==14,"material debits preserve snapshot");
+        var delayed=new FeedScenario(new[]{D(1,true),D(1)},new[]{F(30,true,true)},None,true);
+        var beforeOutput=delayed.Convert(7,new FeedCandidate(1,new[]{false,true},99),0,new Dictionary<int,double>{{0,7}});
+        Check(delayed.HumanDeficit(beforeOutput)==0&&delayed.AnimalDeficit(beforeOutput)==0,"surplus ingredients can be consumed safely before output exists");
         var timer=System.Diagnostics.Stopwatch.StartNew();
         var many=new List<Demand>();for(int i=0;i<100;i++)many.Add(D(1));
         var access=new bool[100];Array.Fill(access,true);

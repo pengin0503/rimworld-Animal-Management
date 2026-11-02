@@ -10,7 +10,7 @@ Animal Management は RimWorld 1.7 用の家畜飼料予測MODです。家畜の
 
 予測ウィンドウの冒頭で7・15・30日の目標と飼料・配送先を選び、追加必要数を計算します。干し草・キブルの既存の到達可能な備蓄を基に検証し、将来の天候・腐敗・部分走査が関わる予測は暫定表示とし、製造操作には使用しません。畑の参考面積は収穫の保証ではありません。
 
-生産は対応するバニラのキブル指示に限定します。「材料を確認して生産プレビュー」で消費材料・設備を確認し、承認すると指示を作成します。自動化には設定の「自動」と設備・配送先の個別許可が必要です。手動指示との重複を防ぎ、指示の編集・停止で管理を解除します。指示は目標達成または1日で停止し、上限・クールダウンに従います。
+生産は対応するバニラのキブル指示に限定します。「材料を確認して生産プレビュー」で消費材料・設備を確認し、承認すると指示を作成します。自動化には設定の「自動」と設備・配送先の個別許可が必要です。手動指示との重複を防ぎ、指示の編集・停止で管理を解除します。指示は回数を固定した一括生産で、上限・クールダウンに従います。進捗・編集後に自動再調整しません。
 
 頭数シナリオは他種・人間の需要を維持し、共有飼料を一度だけ配分します。推計は種別の代替案であり合算できません。自動屠殺の設定変更には別の設定許可と毎回の確認が必要です。妊娠・絆のある個体を保護しますが、設定変更後にバニラが不可逆な屠殺を行う可能性があります。
 
@@ -80,7 +80,7 @@ Animal Management は RimWorld 1.7 用の家畜飼料予測MODです。家畜の
 
 Choose a 7/15/30-day horizon, feed and destination at the top of the forecast window. Replacement quantities use verified accessible hay/kibble stocks. Weather, spoilage or incomplete observations make a scenario provisional and block production actions. The illustrated hay area is not a harvest guarantee.
 
-Production supports the vanilla kibble recipe only. Preview ingredients and the workbench before approving an instruction. Automation requires both the feature Auto mode and permission for the specific bench/destination on this map. Existing manual bills are neither duplicated nor changed. Editing or suspending an instruction releases ownership. Managed instructions stop on satisfaction or after one day, with caps and cooldowns.
+Production supports the vanilla kibble recipe only. Preview ingredients and the workbench before approving an instruction. Automation requires both the feature Auto mode and permission for the specific bench/destination on this map. Existing manual bills are neither duplicated nor changed. Editing or suspending an instruction releases ownership. Instructions use a fixed finite batch count, caps and cooldowns. Production progress or edits release automatic ownership; they are not readjusted automatically.
 
 Species capacity scenarios keep other species and human demand fixed and allocate shared feed once; their results cannot be added together. Slaughter configuration changes require a separate opt-in and confirmation every time. Pregnancy/bond protection is enabled, but vanilla may subsequently slaughter animals irreversibly.
 

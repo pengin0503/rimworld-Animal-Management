@@ -61,7 +61,7 @@ namespace Pengin.AnimalManagement
             if(list.ButtonText("AM_PreviewProduction".Translate()))preview=ManagedFeedBills.Preview(map,forecast,anchor,plan,bench);
             if(preview==null||preview.Bench!=bench||preview.Anchor!=anchor)return;
 
-            var state=map.GetComponent<AnimalActionState>();string permission=bench.ThingID+"/"+anchor.Stack.ThingID;
+            var state=map.GetComponent<AnimalActionState>();string permission=ManagedFeedBills.PermissionKey(bench,anchor);
             if(list.ButtonText((state.Permissions.Contains(permission)?"AM_RevokeTarget":"AM_AllowTarget").Translate()))
             {
                 if(state.Permissions.Contains(permission))state.Permissions.Remove(permission);
@@ -86,7 +86,7 @@ namespace Pengin.AnimalManagement
             list.GapLine();list.Label("AM_CapacityConditions".Translate());
             if(list.ButtonText("AM_CapacitySpecies".Translate(def.LabelCap)))
             {speciesIndex=(speciesIndex+1)%species.Count;def=species[speciesIndex];capacity=null;}
-            if(list.ButtonText("AM_CalculateCapacity".Translate()))
+            if((s.ProductionMode==ActionMode.Auto&&(capacitySource!=snap||capacitySpecies!=def||capacity==null||capacity.Horizon!=s.TargetDays))||list.ButtonText("AM_CalculateCapacity".Translate()))
             {
                 capacity=HerdCapacityPlanner.Calculate(snap.Scenario,snap.Consumers.Select(p=>p.IsColonyAnimal&&p.def==def).ToArray(),s.TargetDays,400,
                     s.PopulationScenario?s.Births:0,s.PopulationScenario?s.Deaths:0);

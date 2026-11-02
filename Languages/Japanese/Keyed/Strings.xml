@@ -77,11 +77,11 @@
   <AM_HayArea>全量収穫の参考：{0}マス、基本成長{1}日。地域の成長時間・肥沃度・損失・低温を含まないため必要面積の保証ではありません。</AM_HayArea>
   <AM_BenchChoice>設備：{0}（クリックで切替）</AM_BenchChoice>
   <AM_PreviewProduction>材料を確認して生産プレビュー</AM_PreviewProduction>
-  <AM_ProductionPreview>{1}で最大{0}個分を生産。以下の材料を消費します。備蓄不足の全解消・完成時期は保証しません。指示の管理期限は1日です。</AM_ProductionPreview>
+  <AM_ProductionPreview>{1}で最大{0}個分を生産。以下の材料を消費します。備蓄不足の全解消・完成時期は保証しません。一括指示の回数上限を固定し、進捗・設定変更後は自動再調整しません。</AM_ProductionPreview>
   <AM_AllowTarget>この設備・配送先の自動操作を許可</AM_AllowTarget>
   <AM_RevokeTarget>この設備・配送先の自動許可を解除</AM_RevokeTarget>
   <AM_CreateProduction>製造指示を作成（確認）</AM_CreateProduction>
-  <AM_ProductionConfirm>{1}に最大{0}個分の管理指示を作成しますか？表示した材料を消費し、配送先を指定します。手動指示は変更しません。期限または目標達成で停止します。</AM_ProductionConfirm>
+  <AM_ProductionConfirm>{1}に最大{0}個分の管理指示を作成しますか？表示した材料を消費し、配送先を指定します。手動指示は変更しません。回数を限定した一括指示で、自動補充を繰り返す設定は付けません。</AM_ProductionConfirm>
   <AM_ActionChanged>条件が変化したか、操作上限・クールダウンに達しました。プレビューを更新してください。</AM_ActionChanged>
   <AM_CapacityConditions>頭数シナリオ：他種・人間の需要を固定し、共有飼料は一度だけ配分。種別の推計は代替案であり合算できません。繁殖・成長は不確実で、頭数変動は比例需要の仮定です。</AM_CapacityConditions>
   <AM_CapacitySpecies>動物種：{0}（クリックで切替）</AM_CapacitySpecies>

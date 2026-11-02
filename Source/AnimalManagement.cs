@@ -315,7 +315,7 @@ namespace Pengin.AnimalManagement
                 growthByDay[day]=growth;
             }
             result.Consumers=all;
-            result.WeatherDependent=result.RoamingGrazers>0||growthByDay.Values.Any(g=>g.Any(p=>p.Nutrition>0))||stock.Any(p=>p.LastFreshDay<30);
+            result.WeatherDependent=result.StandingNutrition>0||result.RoamingGrazers>0||growthByDay.Values.Any(g=>g.Any(p=>p.Nutrition>0))||stock.Any(p=>p.LastFreshDay<30);
             result.Scenario=new FeedScenario(demands,stock.Concat(standing).ToList(),day=>growthByDay[day],
                 !result.Partial&&!result.WeatherDependent&&!settings.IncludeForbidden&&!settings.PopulationScenario);
             // A pen whose animals share stored feed with other consumers has an

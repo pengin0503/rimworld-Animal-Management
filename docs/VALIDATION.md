@@ -152,6 +152,14 @@ Review follow-up (PR #16):
 - New Scribe settings round-trip fixture extended; **not executed** against actual game assemblies in this session.
 - R2 research README, type index and chunks 000/001/004/006/007/008/017 verified API names for RecipeDef, Bill_Production/BillStack, filters, auto-slaughter and PriorityWork. Public reference compilation checks signatures; metadata is not a runtime behavioral test.
 - Production rejects uncertain forecasts. A conservative conversion scenario debits ingredients from every accessible pool that vanilla might choose, protects human demand, and requires net animal nutrition improvement. Only vanilla kibble and unmodified Building_WorkTable are writable.
-- Per-map permissions/ownership/history, bounded target-count bills, cooldown, manual fingerprint checks and expiry were reviewed inline (no subagents, per user instruction).
+- Per-map permissions/ownership/history, bounded finite-batch bills, cooldown, manual fingerprint checks and expiry were reviewed inline (no subagents, per user instruction).
 - Unverified: normal in-game UI, actual bill/hauling behavior, whole-map Scribe reference resolution, install/removal, actual slaughter behavior, conflicts in a 270+ MOD loadout, TPS/GC comparison. These remain acceptance work; existing user play validation applies to earlier features only.
 - No private game DLLs or credentials were added to source/CI/packages.
+
+### Safety review follow-up
+- Finite repeat-count bills enforce the item cap even if animals consume products during production; target-count bills could otherwise keep manufacturing without a total bound.
+- Auto additionally requires ingredient consumption alone (before output arrives) not to worsen modeled animal or human deficits. Completion timing is not assumed safe.
+- Target permissions include workbench and destination positions; movement requires renewed permission.
+- Real-game fixture now compiles against public references in CI; this is compilation only, not Scribe execution.
+- Follow-up suite: 38 nutrition/planning assertions + 8 ownership assertions + 4 herd scenarios.
+- Prospective kibble ingredient restrictions are checked with a real unspawned product and consumer-specific nutrition; nested/unknown ingredient histories block conversion. Standing forage also marks projections weather-dependent.
