@@ -1,17 +1,44 @@
-# Unreleased (development)
+# Animal Management v1.1.0 — RimWorld 1.7
 
-- Fixed (#25): kibble ingredient debits of different defs in one nutrition group are summed; an ingredient whose permitted stacks span differently accessible or spoiling groups now blocks production instead of being guessed. / 同じ栄養グループの複数材料を合算して控除し、材料候補が複数グループに分かれる場合は推測せず製造を禁止。
-- Fixed (#21): normal batch progress, completion and expiry no longer count as manual edits; finished/expired managed bills are removed and the next day's replenishment can be created. Manual edits, suspension and deletion still stop automation for that bench. / 正常な進捗・完了・期限切れを手動編集と区別し、翌日の再補充を可能に。手動編集・停止・削除は従来どおり設備の自動管理を停止。
-- Saves from 1.1.0 load; benches revoked by earlier natural completions stay revoked until allowed again. In-game acceptance remains under #6.
+## 日本語
 
-# 1.1.0 actionable automation (development)
+**新機能**
+- 7・15・30日先の飼料不足対策と冬越し備蓄目標、種別の適正飼育頭数推計を追加。
+- バニラのキブル製造指示について、材料・設備の確認付き作成と個別許可のある限定自動化に対応。手動製造指示を保護し、実行上限・クールダウン・履歴を保持。
+- 自動屠殺の設定変更案は独立した許可と毎回の確認が必要。デフォルトは確認付き。
+- 飼料備蓄ゼロでも参考計画と適正頭数を表示。生産の実行には対象・材料の追加確認が必要。
 
-- Added shared-allocation reserve scenarios, winter targets and diet-aware herd capacity.
-- Added explicit, bounded vanilla kibble bill previews and target permissions; manual instructions are protected.
-- Added separately confirmed protected auto-slaughter limit previews.
-- 日英UI、機能別OFF／確認付き／自動、保存する操作履歴と上限を追加。
-- New runtime/gameplay and full save-load acceptance remain unverified; see VALIDATION.md.
+**修正・改善**
+- 複数の原材料を同じ栄養プールから使う場合の控除計算を修正し、安全性を確認できない材料の組み合わせは自動生産を禁止。
+- キブル製造の正常な進捗・完了・期限切れと、プレイヤーによる編集・停止を区別。
+- 放牧・季節の影響がある場合も、予測と放牧ゼロの保守的条件の両方で各消費者の栄養状態を悪化させないと証明できる場合のみ、自動生産候補として扱う。
+- 種別の飼育頭数推計、操作履歴・停止理由の表示を改善。
+- 飼料アクセス集合を固定長キーにして不要な文字列生成・プール検索を削減し、予測計算の重複処理を削減。
 
+**検証範囲**
+- 公開GitHub Actionsでモデル・回帰テスト、Releaseビルド、翻訳・配布構成の検証を実施。
+- 1.1.0新機能の通常ゲーム操作、完全なセーブ・ロード、270以上のMODとの互換性、ゲームTPS/GCの比較は未検証。計算結果は保証ではありません。
+
+## English
+
+**Added**
+- Actionable 7/15/30-day feed reserves, winter stock targets and sustainable capacity estimates per animal species.
+- Confirmed and separately permissioned bounded vanilla kibble bill production. Player-authored bills remain protected, with caps, cooldown and action history.
+- Slaughter-policy suggestions require a separate permission and confirmation for each change. Confirmation is the default.
+- Advisory feed-free estimates and herd capacity are available without existing hay or kibble stacks; production still requires a verified destination and ingredients.
+
+**Fixed and improved**
+- Corrected pooled ingredient-nutrition debits and denied uncertain ingredient choices for automated production.
+- Distinguished natural bill progress/completion/expiry from user edits and suspension.
+- Under weather uncertainty, production needs independent proof under both observed growth and zero-grazing conditions without worsening any consumer's food shortage.
+- Improved species-specific capacity calculations and visibility of automatic stop reasons.
+- Reduced access-mask string allocations, linear pool lookups and duplicated forecast work.
+
+**Verification**
+- Public GitHub Actions regression tests, Release compilation, translation and package validation passed.
+- Normal in-game operation of 1.1.0 features, full save/reload, 270+ mod compatibility and actual TPS/GC improvements are **not verified**.
+
+---
 Animal Management v1.0.1 for RimWorld 1.7 (built against 1.7.4985). No dependencies.
 
 ## 日本語
