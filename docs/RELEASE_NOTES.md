@@ -1,4 +1,4 @@
-# Actionable automation (development)
+# 1.1.0 actionable automation (development)
 
 - Added shared-allocation reserve scenarios, winter targets and diet-aware herd capacity.
 - Added explicit, bounded vanilla kibble bill previews and target permissions; manual instructions are protected.

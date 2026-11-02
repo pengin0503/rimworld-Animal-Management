@@ -77,11 +77,11 @@
   <AM_HayArea>Illustrative full harvest: {0} cells; base growth {1} days. Does not account for local growing hours, fertility, losses or cold; not a guaranteed field size.</AM_HayArea>
   <AM_BenchChoice>Workbench: {0} (click to change)</AM_BenchChoice>
   <AM_PreviewProduction>Check ingredients and preview production</AM_PreviewProduction>
-  <AM_ProductionPreview>Produce up to {0} items at {1}. Materials below are consumed; full reserve coverage and completion time are not guaranteed. The instruction expires after one day.</AM_ProductionPreview>
+  <AM_ProductionPreview>Produce up to {0} items at {1}. Materials below are consumed; full reserve coverage and completion time are not guaranteed. The batch count is fixed; production progress or edits release automatic ownership.</AM_ProductionPreview>
   <AM_AllowTarget>Permit automatic actions for this bench and destination</AM_AllowTarget>
   <AM_RevokeTarget>Revoke automatic permission for this bench/destination</AM_RevokeTarget>
   <AM_CreateProduction>Create instruction (confirmation)</AM_CreateProduction>
-  <AM_ProductionConfirm>Create a managed instruction for up to {0} items at {1}? It consumes the previewed ingredients and reserves this destination. No manual bills are changed. It stops on expiry or satisfaction.</AM_ProductionConfirm>
+  <AM_ProductionConfirm>Create a managed instruction for up to {0} items at {1}? It consumes the previewed ingredients and reserves this destination. No manual bills are changed. This is a finite batch order; no automatic replenishment is attached.</AM_ProductionConfirm>
   <AM_ActionChanged>Conditions changed or the action limit/cooldown blocked execution. Refresh the preview.</AM_ActionChanged>
   <AM_CapacityConditions>Capacity scenario: other species and humans stay fixed, shared food counted once. Species estimates are alternatives, not additive. Future births and aging are uncertain; population scenarios use proportional demand.</AM_CapacityConditions>
   <AM_CapacitySpecies>Herd species: {0} (click to change)</AM_CapacitySpecies>

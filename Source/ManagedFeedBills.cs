@@ -14,6 +14,7 @@ namespace Pengin.AnimalManagement
         public RecipeDef Recipe;
         public FeedAnchor Anchor;
         public int Items, Batches;
+        public bool DelaySafe;
         public string Blocked="AM_ProductionBlocked";
         public Dictionary<Thing,int> Ingredients=new Dictionary<Thing,int>();
         public bool Ready {get{return Blocked==null;}}
@@ -44,6 +45,8 @@ namespace Pengin.AnimalManagement
             }
             return result+"|index="+b.billStack.IndexOf(b);
         }
+        public static string PermissionKey(Building_WorkTable bench,FeedAnchor anchor)
+        {return bench.ThingID+"@"+bench.Position+"/"+anchor.Stack.ThingID+"@"+anchor.Stack.Position;}
         static bool SafeBench(Building_WorkTable bench,Map map)
         {return bench!=null&&bench.Spawned&&bench.Map==map&&bench.Faction==Faction.OfPlayer&&bench.GetType()==typeof(Building_WorkTable)&&!bench.IsForbidden(Faction.OfPlayer)&&bench.CurrentlyUsableForBills();}
         public static FeedProductionPreview Preview(Map map,FeedForecast forecast,FeedAnchor anchor,FeedActionPlan plan,Building_WorkTable bench)
@@ -55,8 +58,8 @@ namespace Pengin.AnimalManagement
             SlotGroup storage=anchor.Stack.GetSlotGroup();
             if(storage==null||!storage.Settings.AllowedToAccept(anchor.Stack))return p;
             // Only the vanilla kibble recipe is writable. Arbitrary mod recipes stay advice-only.
-            var recipe=bench.def.AllRecipes.FirstOrDefault(r=>r.defName=="Make_Kibble"&&r.AvailableNow&&r.AvailableOnNow(bench)&&r.products.Count==1&&r.products[0].thingDef==anchor.Stack.def);
-            if(recipe==null||recipe.workerClass!=typeof(RecipeWorker))return p;
+            var recipe=bench.def.AllRecipes.FirstOrDefault(r=>r.defName=="Make_Kibble"&&r.AvailableNow&&r.AvailableOnNow(bench)&&r.products!=null&&r.products.Count==1&&r.products[0].thingDef==anchor.Stack.def);
+            if(recipe==null||recipe.workerClass!=typeof(RecipeWorker)||recipe.ingredients==null||recipe.ingredients.Count==0||recipe.ingredients.Count>8||recipe.fixedIngredientFilter==null||recipe.defaultIngredientFilter==null)return p;
             p.Recipe=recipe;
             if(map.listerBuildings.allBuildingsColonist.OfType<Building_WorkTable>().Any(table=>table.BillStack.Bills.Any(b=>b.recipe==recipe))){p.Blocked="AM_DuplicateBill";return p;}
             int yield=recipe.products[0].count;if(yield<=0)return p;
@@ -90,6 +93,23 @@ namespace Pengin.AnimalManagement
                 }
                 if(!supplied)return p;
             }
+            // New kibble can have different ingredient-derived food restrictions from the
+            // existing destination stack. Verify the prospective product before simulation.
+            if(p.Ingredients.Keys.Any(t=>t.TryGetComp<CompIngredients>()!=null))return p;
+            var product=ThingMaker.MakeThing(anchor.Stack.def);
+            var productIngredients=product.TryGetComp<CompIngredients>();
+            if(productIngredients!=null)foreach(var def in permitted)productIngredients.RegisterIngredient(def);
+            var outputAccess=(bool[])anchor.Candidate.Access.Clone();double outputNutrition=double.PositiveInfinity;
+            for(int i=0;i<snap.Consumers.Count;i++)
+            {
+                if(!outputAccess[i])continue;var consumer=snap.Consumers[i];
+                if(!FoodUtility.WillEat(consumer,product,consumer)){outputAccess[i]=false;continue;}
+                double value=FoodUtility.NutritionForEater(consumer,product);
+                if(double.IsNaN(value)||double.IsInfinity(value)||value<=0)return p;
+                outputNutrition=Math.Min(outputNutrition,value);
+            }
+            if(double.IsInfinity(outputNutrition))return p;
+            var producedFeed=new FeedCandidate(outputNutrition,outputAccess,anchor.Candidate.FreshDays);
             var debits=new Dictionary<int,double>();
             // Vanilla may select another stack of the permitted def. Debit the worst-case
             // amount from EVERY reachable pool, not merely the displayed ingredient stacks.
@@ -105,9 +125,12 @@ namespace Pengin.AnimalManagement
             }
             // Ingredients are consumed by production: prove net benefit with the SAME allocation.
             var beforeProjection=snap.Scenario.Run(plan.Horizon,0,0);
-            var after=snap.Scenario.Convert(plan.Horizon,anchor.Candidate,p.Items,debits);
+            var after=snap.Scenario.Convert(plan.Horizon,producedFeed,p.Items,debits);
             if(snap.Scenario.AnimalDeficit(after)>=snap.Scenario.AnimalDeficit(beforeProjection)-1e-6||
                 snap.Scenario.HumanDeficit(after)>snap.Scenario.HumanDeficit(beforeProjection)+1e-6)return p;
+            var withoutOutput=snap.Scenario.Convert(plan.Horizon,producedFeed,0,debits);
+            p.DelaySafe=snap.Scenario.HumanDeficit(withoutOutput)<=snap.Scenario.HumanDeficit(beforeProjection)+1e-6&&
+                snap.Scenario.AnimalDeficit(withoutOutput)<=snap.Scenario.AnimalDeficit(beforeProjection)+1e-6;
             p.Blocked=null;return p;
         }
         public static bool Execute(Map map,FeedProductionPreview shown,bool automatic)
@@ -120,17 +143,17 @@ namespace Pengin.AnimalManagement
             var anchor=snap.Anchors.FirstOrDefault(a=>a.Stack==shown.Anchor.Stack);if(anchor==null)return false;
             var plan=FeedActionPlanner.Plan(snap.Scenario,anchor.Candidate,s.TargetDays,0,0,100000);
             var next=Preview(map,forecast,anchor,plan,shown.Bench);
-            if(!next.Ready||next.Recipe!=shown.Recipe||next.Items!=shown.Items||!next.Ingredients.OrderBy(x=>x.Key.ThingID).SequenceEqual(shown.Ingredients.OrderBy(x=>x.Key.ThingID)))return false;
+            if(!next.Ready||(automatic&&!next.DelaySafe)||next.Recipe!=shown.Recipe||next.Items!=shown.Items||!next.Ingredients.OrderBy(x=>x.Key.ThingID).SequenceEqual(shown.Ingredients.OrderBy(x=>x.Key.ThingID)))return false;
             state.CheckOwnership();int now=Find.TickManager.TicksGame;
-            bool allowed=state.Permissions.Contains(shown.Bench.ThingID+"/"+anchor.Stack.ThingID);
+            bool allowed=state.Permissions.Contains(PermissionKey(shown.Bench,anchor));
             var mode=automatic?s.ProductionMode:s.ProductionMode==ActionMode.Off?ActionMode.Off:ActionMode.Confirm;
             if(!ManagedBillPolicy.CanCreate(mode,allowed,snap.Scenario.Reliable,false,state.Managed.Count,s.MaxBills,now,state.LastAction,s.Cooldown)||state.Revoked.Contains(shown.Bench.ThingID))return false;
-            var bill=new Bill_Production(next.Recipe){repeatMode=BillRepeatModeDefOf.TargetCount,targetCount=anchor.Stack.GetSlotGroup().HeldThings.Where(t=>t.def==anchor.Stack.def).Sum(t=>t.stackCount)+next.Items};
+            var bill=new Bill_Production(next.Recipe){repeatMode=BillRepeatModeDefOf.RepeatCount,repeatCount=next.Batches};
             bill.ingredientFilter.SetDisallowAll();foreach(var def in next.Ingredients.Keys.Select(t=>t.def).Distinct())bill.ingredientFilter.SetAllow(def,true);
             bill.SetIncludeGroup(anchor.Stack.GetSlotGroup());
             bill.SetStoreMode(BillStoreModeDefOf.SpecificStockpile,anchor.Stack.GetSlotGroup());
             next.Bench.BillStack.AddBill(bill);
-            state.Managed.Add(new ManagedFeedBill{Bench=next.Bench,BillId=bill.GetUniqueLoadID(),Fingerprint=Fingerprint(bill),Expires=now+60000,Automatic=automatic,Permission=shown.Bench.ThingID+"/"+anchor.Stack.ThingID});
+            state.Managed.Add(new ManagedFeedBill{Bench=next.Bench,BillId=bill.GetUniqueLoadID(),Fingerprint=Fingerprint(bill),Expires=now+60000,Automatic=automatic,Permission=PermissionKey(shown.Bench,anchor)});
             state.LastAction=now;state.AddHistory(next.Bench.ThingID+" / "+bill.GetUniqueLoadID()+" / "+next.Items);
             return true;
         }

@@ -67,7 +67,7 @@ namespace Pengin.AnimalManagement
             {
                 var plan=FeedActionPlanner.Plan(snap.Scenario,anchor.Candidate,s.TargetDays,0,0,100000);
                 if(!plan.Feasible||plan.RequiredItems==0)continue;
-                foreach(var bench in map.listerBuildings.allBuildingsColonist.OfType<Building_WorkTable>().Where(b=>Permissions.Contains(b.ThingID+"/"+anchor.Stack.ThingID)&&!Revoked.Contains(b.ThingID)).Take(4))
+                foreach(var bench in map.listerBuildings.allBuildingsColonist.OfType<Building_WorkTable>().Where(b=>Permissions.Contains(ManagedFeedBills.PermissionKey(b,anchor))&&!Revoked.Contains(b.ThingID)).Take(4))
                 {
                     var preview=ManagedFeedBills.Preview(map,f,anchor,plan,bench);
                     if(preview.Ready&&ManagedFeedBills.Execute(map,preview,true))return;
