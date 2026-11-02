@@ -34,14 +34,25 @@ namespace Pengin.AnimalManagement
         // Player-controlled settings only (#21). repeatCount is runtime progress, tracked
         // separately; paused is vanilla's own TargetCount toggle; the list position moves
         // when other bills are added or removed. Pawn restrictions are private fields.
+        // v2 is culture-independent (ordinal order, invariant formatting) so a locale change
+        // between sessions is not mistaken for a manual edit. Field lists are built once.
         static readonly string[] runtime={"billStack","loadID","nextTickToSearchForIngredients","ingredientFilter","repeatCount","paused"};
+        static FieldInfo[] ownedFields,legacyFields,filterFields;
+        static FieldInfo[] OwnedFields{get{return ownedFields??(ownedFields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
+            .Where(f=>!runtime.Contains(f.Name)).OrderBy(f=>f.Name,StringComparer.Ordinal).ToArray());}}
+        static FieldInfo[] FilterFields{get{return filterFields??(filterFields=typeof(ThingFilter).GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)
+            .Where(f=>f.Name=="disallowedSpecialFilters"||f.Name=="allowedHitPointsPercents"||f.Name=="allowedQualities").ToArray());}}
         public static string Fingerprint(Bill_Production b)
         {
-            var fields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
-                .Where(f=>!runtime.Contains(f.Name)).OrderBy(f=>f.Name);
-            string result=ManagedBillPolicy.Version+string.Join("|",fields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
-            result+="|restriction="+Value(b.PawnRestriction)+","+b.SlavesOnly+","+b.MechsOnly+","+b.NonMechsOnly;
-            return result+"|"+Settings(b);
+            var thread=System.Threading.Thread.CurrentThread;var culture=thread.CurrentCulture;
+            try
+            {
+                thread.CurrentCulture=System.Globalization.CultureInfo.InvariantCulture;
+                string result=ManagedBillPolicy.Version+string.Join("|",OwnedFields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
+                result+="|restriction="+Value(b.PawnRestriction)+","+b.SlavesOnly+","+b.MechsOnly+","+b.NonMechsOnly;
+                return result+"|"+Settings(b,StringComparer.Ordinal);
+            }
+            finally{thread.CurrentCulture=culture;}
         }
         // Owned-settings comparison. A 1.1.0 entry (no version prefix) is compared with the
         // same legacy algorithm after removing its progress and position tokens.
@@ -51,22 +62,22 @@ namespace Pengin.AnimalManagement
             if(saved.StartsWith(ManagedBillPolicy.Version,StringComparison.Ordinal))return saved==Fingerprint(b);
             return ManagedBillPolicy.NormalizeLegacy(saved)==ManagedBillPolicy.NormalizeLegacy(LegacyFingerprint(b));
         }
+        // Exactly the 1.1.0 algorithm (current culture, default ordering).
         static string LegacyFingerprint(Bill_Production b)
         {
-            var fields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
-                .Where(f=>f.Name!="billStack"&&f.Name!="loadID"&&f.Name!="nextTickToSearchForIngredients"&&f.Name!="ingredientFilter").OrderBy(f=>f.Name);
-            string result=string.Join("|",fields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
-            return result+"|"+Settings(b)+"|index="+b.billStack.IndexOf(b);
+            if(legacyFields==null)legacyFields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
+                .Where(f=>f.Name!="billStack"&&f.Name!="loadID"&&f.Name!="nextTickToSearchForIngredients"&&f.Name!="ingredientFilter").OrderBy(f=>f.Name).ToArray();
+            string result=string.Join("|",legacyFields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
+            return result+"|"+Settings(b,StringComparer.CurrentCulture)+"|index="+b.billStack.IndexOf(b);
         }
-        static string Settings(Bill_Production b)
+        static string Settings(Bill_Production b,StringComparer order)
         {
-            string result="";
-            result+=b.RenamableLabel+"|"+b.GetStoreMode().defName+"|"+Value(b.GetSlotGroup())+"|"+Value(b.GetIncludeSlotGroup());
-            result+="|"+string.Join(",",b.ingredientFilter.AllowedThingDefs.Select(d=>d.defName).OrderBy(n=>n));
-            foreach(FieldInfo f in typeof(ThingFilter).GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Where(f=>f.Name=="disallowedSpecialFilters"||f.Name=="allowedHitPointsPercents"||f.Name=="allowedQualities"))
+            string result=b.RenamableLabel+"|"+b.GetStoreMode().defName+"|"+Value(b.GetSlotGroup())+"|"+Value(b.GetIncludeSlotGroup());
+            result+="|"+string.Join(",",b.ingredientFilter.AllowedThingDefs.Select(d=>d.defName).OrderBy(n=>n,order));
+            foreach(FieldInfo f in FilterFields)
             {
                 var sequence=f.GetValue(b.ingredientFilter) as System.Collections.IEnumerable;
-                result+="|"+f.Name+"="+(sequence==null?Value(f.GetValue(b.ingredientFilter)):string.Join(",",sequence.Cast<object>().Select(Value).OrderBy(n=>n)));
+                result+="|"+f.Name+"="+(sequence==null?Value(f.GetValue(b.ingredientFilter)):string.Join(",",sequence.Cast<object>().Select(Value).OrderBy(n=>n,order)));
             }
             return result;
         }

@@ -63,7 +63,17 @@ class Program
             owned=ManagedFeedBills.Fingerprint(bill);
             typeof(RimWorld.Bill).GetField("slavesOnly",flags).SetValue(bill,true);
             if(ManagedFeedBills.MatchesSettings(owned,bill))throw new Exception("private pawn restriction change not detected");
-            Console.WriteLine("PASS real-game Bill_Production fingerprint ignores progress and detects setting/restriction edits");
+            bill.hpRange=new FloatRange(.25f,.75f);bill.ingredientSearchRadius=12.5f;
+            var saved=System.Globalization.CultureInfo.CurrentCulture;string german,japanese;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentCulture=new System.Globalization.CultureInfo("de-DE");german=ManagedFeedBills.Fingerprint(bill);
+                System.Globalization.CultureInfo.CurrentCulture=new System.Globalization.CultureInfo("ja-JP");japanese=ManagedFeedBills.Fingerprint(bill);
+            }
+            finally{System.Globalization.CultureInfo.CurrentCulture=saved;}
+            if(german!=japanese||!german.Contains("0.25"))throw new Exception("fingerprint depends on the current culture");
+            if((.25f).ToString(new System.Globalization.CultureInfo("de-DE"))!="0,25")throw new Exception("culture data unavailable: culture check would be vacuous");
+            Console.WriteLine("PASS real-game Bill_Production fingerprint ignores progress, detects setting/restriction edits and is culture-independent");
         }
         finally {if(File.Exists(path))File.Delete(path);}
     }
