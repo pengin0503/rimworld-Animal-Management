@@ -92,4 +92,7 @@
   <AM_AllowSlaughter>自動屠殺設定の確認付き変更を許可（不可逆な屠殺につながる可能性）</AM_AllowSlaughter>
   <AM_SlaughterPreview>自動屠殺の総数上限をプレビュー：{0} → {1}</AM_SlaughterPreview>
   <AM_SlaughterConfirm>{0}の総数上限を{1}から{2}へ変更しますか？バニラが不可逆な屠殺を行う可能性があります。妊娠・絆のある個体を保護し、性別・年齢別上限は維持します。自動モードでも毎回確認します。</AM_SlaughterConfirm>
+  <AM_CapacityMode>適正飼育頭数の表示: {0}</AM_CapacityMode>
+  <AM_HypotheticalPlan>食性だけに基づく未検証の推定：{0}を{1}個／{2}日分。保管場所・到達性は未確認で、自動生産には使用しません。</AM_HypotheticalPlan>
+  <AM_ActionHistory>最近の確認付き・自動操作履歴（このマップ）：</AM_ActionHistory>
 </LanguageData>
