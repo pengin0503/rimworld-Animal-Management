@@ -95,7 +95,7 @@ namespace Pengin.AnimalManagement
                 foreach(string entry in state.History)
                 {
                     int reason=entry.IndexOf("auto status: AM_",StringComparison.Ordinal);
-                    list.Label(reason<0?entry:entry.Substring(0,reason)+"auto status: "+entry.Substring(reason+13).Translate());
+                    list.Label(reason<0?entry:entry.Substring(0,reason)+"auto status: "+entry.Substring(reason+13).Translate().ToString());
                 }
                 if(settings.ProductionMode==ActionMode.Auto)list.Label("AM_LastAutoStatus".Translate(state.LastAutoReason.Translate()));
             }
