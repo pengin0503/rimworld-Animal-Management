@@ -92,4 +92,7 @@
   <AM_AllowSlaughter>Allow confirmed auto-slaughter configuration previews (may lead to irreversible slaughter)</AM_AllowSlaughter>
   <AM_SlaughterPreview>Preview total slaughter limit: {0} → {1}</AM_SlaughterPreview>
   <AM_SlaughterConfirm>Change {0} total limit from {1} to {2}? Vanilla may then slaughter animals irreversibly. Pregnant/bonded animals will be protected; other sex/age limits remain. This requires confirmation even in Auto mode.</AM_SlaughterConfirm>
+  <AM_CapacityMode>Herd capacity display: {0}</AM_CapacityMode>
+  <AM_HypotheticalPlan>Unverified diet-only estimate: {0} × {1} items for {2} days. Placement and access are NOT verified; automatic production is disabled.</AM_HypotheticalPlan>
+  <AM_ActionHistory>Recent automated and confirmed actions (this map):</AM_ActionHistory>
 </LanguageData>
