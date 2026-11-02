@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
-  <ItemGroup><Compile Include="Program.cs"/><Compile Include="../Source/NutritionForecast.cs" Link="NutritionForecast.cs"/></ItemGroup>
+  <ItemGroup><Compile Include="Program.cs"/><Compile Include="OwnershipTests.cs"/><Compile Include="HerdTests.cs"/><Compile Include="../Source/HerdCapacityPlanner.cs"/><Compile Include="../Source/ManagedBillPolicy.cs"/><Compile Include="../Source/NutritionForecast.cs" Link="NutritionForecast.cs"/><Compile Include="../Source/FeedActionPlanner.cs" Link="FeedActionPlanner.cs"/></ItemGroup>
 </Project>

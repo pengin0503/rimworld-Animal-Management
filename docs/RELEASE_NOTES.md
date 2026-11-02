@@ -1,3 +1,11 @@
+# Actionable automation (development)
+
+- Added shared-allocation reserve scenarios, winter targets and diet-aware herd capacity.
+- Added explicit, bounded vanilla kibble bill previews and target permissions; manual instructions are protected.
+- Added separately confirmed protected auto-slaughter limit previews.
+- 日英UI、機能別OFF／確認付き／自動、保存する操作履歴と上限を追加。
+- New runtime/gameplay and full save-load acceptance remain unverified; see VALIDATION.md.
+
 Animal Management v1.0.1 for RimWorld 1.7 (built against 1.7.4985). No dependencies.
 
 ## 日本語

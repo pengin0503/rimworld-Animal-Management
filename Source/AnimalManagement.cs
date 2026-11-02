@@ -12,6 +12,10 @@ namespace Pengin.AnimalManagement
     public sealed class AnimalSettings : ModSettings
     {
         public int WarnDays=3, Births, Deaths;
+        public ActionMode SolutionsMode=ActionMode.Confirm, ProductionMode=ActionMode.Confirm;
+        public int TargetDays=15, MaxBills=2, MaxItems=1000, Cooldown=60000;
+        public float SafetyMargin=.1f;
+        public bool AllowSlaughter;
         public bool IncludeForbidden, PopulationScenario, ShowAlert=true;
         public override void ExposeData()
         {
@@ -21,10 +25,31 @@ namespace Pengin.AnimalManagement
             Scribe_Values.Look(ref Births,"births",0);
             Scribe_Values.Look(ref Deaths,"deaths",0);
             Scribe_Values.Look(ref ShowAlert,"showAlert",true);
+            Scribe_Values.Look(ref SolutionsMode,"solutionsMode",ActionMode.Confirm);
+            Scribe_Values.Look(ref ProductionMode,"productionMode",ActionMode.Confirm);
+            Scribe_Values.Look(ref TargetDays,"targetDays",15);
+            Scribe_Values.Look(ref SafetyMargin,"safetyMargin",.1f);
+            Scribe_Values.Look(ref MaxBills,"maxBills",2);
+            Scribe_Values.Look(ref MaxItems,"maxItems",1000);
+            Scribe_Values.Look(ref Cooldown,"actionCooldown",60000);
+            Scribe_Values.Look(ref AllowSlaughter,"allowSlaughter",false);
+            TargetDays=TargetDays==7||TargetDays==30?TargetDays:15;
+            MaxBills=Math.Max(1,Math.Min(10,MaxBills));MaxItems=Math.Max(1,Math.Min(10000,MaxItems));
+            Cooldown=Math.Max(10000,Cooldown);SafetyMargin=Math.Max(0,Math.Min(.5f,SafetyMargin));
             base.ExposeData();
         }
         // Only settings that change the calculation; the warning threshold is applied on display.
         public string Signature {get{return IncludeForbidden+":"+PopulationScenario+":"+Births+":"+Deaths;}}
+    }
+    public sealed class FeedMaterial
+    {
+        public int Pool;
+        public double PerItem;
+    }
+    public sealed class FeedAnchor
+    {
+        public Thing Stack;
+        public FeedCandidate Candidate;
     }
     public sealed class ForecastSnapshot
     {
@@ -32,6 +57,11 @@ namespace Pengin.AnimalManagement
         public double DailyDemand,HumanDemand,StockNutrition,StandingNutrition,RoamingDemand;
         public bool Partial;
         public string SettingsSignature;
+        public FeedScenario Scenario;
+        public Dictionary<Thing,FeedMaterial> Materials=new Dictionary<Thing,FeedMaterial>();
+        public List<Pawn> Consumers;
+        public List<FeedAnchor> Anchors=new List<FeedAnchor>();
+        public bool WeatherDependent;
         public List<string> Lines=new List<string>();
         public Projection StockOnly, Full;
     }
@@ -215,11 +245,17 @@ namespace Pengin.AnimalManagement
                 if(!access.Any(x=>x))continue;
                 perItem=conservativeNutrition;
                 int expiry=LastFreshDay(item);
+                // Existing stacks provide verified diet/access and a conservative expiry.
+                // Do not infer accessibility for a food which has never reached the pen.
+                if(result.Anchors.Count<32&&(item.def.defName=="Hay"||item.def.defName=="Kibble")&&
+                    !item.IsForbidden(Faction.OfPlayer)&&!result.Anchors.Any(a=>a.Stack.def==item.def&&a.Candidate.Access.SequenceEqual(access)))
+                    result.Anchors.Add(new FeedAnchor{Stack=item,Candidate=new FeedCandidate(perItem,access,expiry)});
                 string key=new string(access.Select(x=>x?'1':'0').ToArray())+":"+expiry;
                 FeedPool pool;
                 if(!byAccess.TryGetValue(key,out pool))
                 {pool=new FeedPool{Access=access,LastFreshDay=expiry};byAccess[key]=pool;stock.Add(pool);}
                 pool.Nutrition+=perItem*item.stackCount;
+                result.Materials[item]=new FeedMaterial{Pool=stock.IndexOf(pool),PerItem=perItem};
                 result.FeedStacks++;result.StockNutrition+=perItem*item.stackCount;
             }
             result.AccessChecks=cache.Misses;
@@ -278,6 +314,10 @@ namespace Pengin.AnimalManagement
                 }
                 growthByDay[day]=growth;
             }
+            result.Consumers=all;
+            result.WeatherDependent=result.RoamingGrazers>0||growthByDay.Values.Any(g=>g.Any(p=>p.Nutrition>0))||stock.Any(p=>p.LastFreshDay<30);
+            result.Scenario=new FeedScenario(demands,stock.Concat(standing).ToList(),day=>growthByDay[day],
+                !result.Partial&&!result.WeatherDependent&&!settings.IncludeForbidden&&!settings.PopulationScenario);
             // A pen whose animals share stored feed with other consumers has an
             // allocation-dependent shortage date: the shared feed could go either way.
             var sharedPens=new HashSet<CompAnimalPenMarker>();

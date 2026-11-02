@@ -54,6 +54,7 @@ namespace Pengin.AnimalManagement
     // Non-modal forecast window: the map stays visible and movable.
     public sealed class Window_FeedForecast : Window
     {
+        readonly FeedPlanningUI planning=new FeedPlanningUI();
         Vector2 scroll;float height=1200;
         public Window_FeedForecast()
         {
@@ -73,6 +74,7 @@ namespace Pengin.AnimalManagement
             Rect content=new Rect(0,0,body.width-20,Math.Max(body.height,height));
             Widgets.BeginScrollView(body,ref scroll,content);
             var list=new Listing_Standard();list.Begin(content);
+            planning.Draw(list,f);
             ForecastText.Draw(list,f);
             height=list.CurHeight+20;list.End();Widgets.EndScrollView();
         }
@@ -118,6 +120,7 @@ namespace Pengin.AnimalManagement
     public sealed class AnimalManagementMod : Mod
     {
         public static AnimalSettings Settings;
+        readonly FeedPlanningUI planning=new FeedPlanningUI();
         Vector2 scroll;float contentHeight=1600;
         public AnimalManagementMod(ModContentPack pack):base(pack){Settings=GetSettings<AnimalSettings>();}
         public override string SettingsCategory(){return "Animal Management";}
@@ -127,6 +130,7 @@ namespace Pengin.AnimalManagement
             Widgets.BeginScrollView(rect,ref scroll,content);
             var list=new Listing_Standard();list.Begin(content);
             list.Label("AM_Description".Translate());
+            FeedPlanningUI.Settings(list,Settings);
             list.Label("AM_WarnDays".Translate(Settings.WarnDays));Settings.WarnDays=(int)list.Slider(Settings.WarnDays,1,15);
             list.CheckboxLabeled("AM_Forbidden".Translate(),ref Settings.IncludeForbidden);
             list.CheckboxLabeled("AM_ShowAlert".Translate(),ref Settings.ShowAlert);
@@ -147,6 +151,7 @@ namespace Pengin.AnimalManagement
                     if(!Find.WindowStack.IsOpen<Window_FeedForecast>())Find.WindowStack.Add(new Window_FeedForecast());
                     return;
                 }
+                planning.Draw(list,f);
                 ForecastText.Draw(list,f);
             }
             else list.Label("AM_NoMap".Translate());
