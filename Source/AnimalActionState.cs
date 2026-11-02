@@ -20,6 +20,12 @@ namespace Pengin.AnimalManagement
         public List<string> Permissions=new List<string>();
         public List<string> Revoked=new List<string>(),History=new List<string>();
         public int LastAction=-180000;
+        public string LastAutoReason="AM_AutoNotEvaluated";
+        void SetAutoReason(string reason)
+        {
+            if(LastAutoReason==reason)return;
+            LastAutoReason=reason;AddHistory("auto status: "+reason);
+        }
         int nextAuto;
         bool faulted;
         public AnimalActionState(Map map):base(map){}
@@ -28,6 +34,7 @@ namespace Pengin.AnimalManagement
             base.ExposeData();Scribe_Collections.Look(ref Permissions,"feedPermissions",LookMode.Value);if(Permissions==null)Permissions=new List<string>();Scribe_Collections.Look(ref Managed,"managedFeedBills",LookMode.Deep);
             Scribe_Collections.Look(ref Revoked,"revokedFeedBenches",LookMode.Value);Scribe_Collections.Look(ref History,"feedActionHistory",LookMode.Value);
             Scribe_Values.Look(ref LastAction,"lastFeedAction",-180000);
+            Scribe_Values.Look(ref LastAutoReason,"lastAutoReason","AM_AutoNotEvaluated");
             if(Managed==null)Managed=new List<ManagedFeedBill>();if(Revoked==null)Revoked=new List<string>();if(History==null)History=new List<string>();
         }
         public void AddHistory(string entry){History.Add(Find.TickManager.TicksGame+": "+entry);while(History.Count>20)History.RemoveAt(0);}
@@ -62,7 +69,10 @@ namespace Pengin.AnimalManagement
             if(s.ProductionMode!=ActionMode.Auto||now<nextAuto||(long)now-LastAction<s.Cooldown)return;
             nextAuto=now+60000;
             var f=map.GetComponent<FeedForecast>();f.Recalculate();var snap=f.Snapshot;
-            if(f.Failed||snap.Partial||snap.Scenario==null||!snap.Scenario.Reliable)return;
+            if(f.Failed||snap.Partial||snap.Scenario==null)
+            {SetAutoReason("AM_AutoIncomplete");return;}
+            if(!snap.Scenario.Reliable)
+            {SetAutoReason(snap.WeatherDependent?"AM_AutoWeather":"AM_AutoUncertain");return;}
             foreach(var anchor in snap.Anchors.Take(4))
             {
                 var plan=FeedActionPlanner.Plan(snap.Scenario,anchor.Candidate,s.TargetDays,0,0,100000);
@@ -70,9 +80,11 @@ namespace Pengin.AnimalManagement
                 foreach(var bench in map.listerBuildings.allBuildingsColonist.OfType<Building_WorkTable>().Where(b=>Permissions.Contains(ManagedFeedBills.PermissionKey(b,anchor))&&!Revoked.Contains(b.ThingID)).Take(4))
                 {
                     var preview=ManagedFeedBills.Preview(map,f,anchor,plan,bench);
-                    if(preview.Ready&&ManagedFeedBills.Execute(map,preview,true))return;
+                    if(preview.Ready&&ManagedFeedBills.Execute(map,preview,true))
+                    {SetAutoReason("AM_AutoCreated");return;}
                 }
             }
+            SetAutoReason(snap.Anchors.Count==0?"AM_AutoNoAnchor":"AM_AutoNoSafeAction");
         }
     }
 }

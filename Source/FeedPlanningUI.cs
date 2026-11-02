@@ -15,35 +15,90 @@ namespace Pengin.AnimalManagement
         int speciesIndex;
         ThingDef capacitySpecies;
         ForecastSnapshot capacitySource;
+        int hypotheticalChoice;
+        FeedActionPlan hypotheticalPlan;
+        ThingDef hypotheticalDef;
+        ForecastSnapshot hypotheticalSource;
+        int hypotheticalDays;
         public void Draw(Listing_Standard list,FeedForecast forecast)
         {
             var settings=AnimalManagementMod.Settings;
-            if(settings.SolutionsMode==ActionMode.Off&&settings.ProductionMode==ActionMode.Off)return;
+            if(settings.SolutionsMode==ActionMode.Off&&settings.ProductionMode==ActionMode.Off&&settings.CapacityMode==ActionMode.Off)return;
             list.GapLine();list.Label("AM_Solutions".Translate());
             if(list.ButtonText("AM_TargetDays".Translate(settings.TargetDays)))
-            {settings.TargetDays=settings.TargetDays==7?15:settings.TargetDays==15?30:7;plan=null;}
+            {settings.TargetDays=settings.TargetDays==7?15:settings.TargetDays==15?30:7;plan=null;capacity=null;}
             var snapshot=forecast.Snapshot;
-            if(snapshot.Scenario==null||snapshot.Anchors.Count==0)
-            {list.Label("AM_NoAnchor".Translate());return;}
-            selected=Math.Min(selected,snapshot.Anchors.Count-1);
-            var anchor=snapshot.Anchors[selected];
-            if(list.ButtonText("AM_FeedChoice".Translate(anchor.Stack.LabelShort)))
-            {selected=(selected+1)%snapshot.Anchors.Count;plan=null;anchor=snapshot.Anchors[selected];}
-            if((settings.SolutionsMode==ActionMode.Auto&&(source!=snapshot||days!=settings.TargetDays))||list.ButtonText("AM_CalculatePlan".Translate()))
+            if(snapshot.Scenario==null)
             {
-                int births=settings.PopulationScenario?settings.Births:0,deaths=settings.PopulationScenario?settings.Deaths:0;
-                plan=FeedActionPlanner.Plan(snapshot.Scenario,anchor.Candidate,settings.TargetDays,births,deaths,100000);
-                source=snapshot;days=settings.TargetDays;preview=null;
+                list.Label("AM_NoAnchor".Translate());
             }
-            if(plan==null||source!=snapshot||days!=settings.TargetDays)return;
-            list.Label("AM_PlanConditions".Translate());
-            list.Label("AM_PlanDeficit".Translate(plan.Deficit.ToString("0.00")));
-            list.Label(plan.Feasible?"AM_PlanCount".Translate(plan.RequiredItems,anchor.Stack.def.LabelCap,days):"AM_NoSolution".Translate());
-            if(!plan.Reliable||forecast.Failed||snapshot.Partial)list.Label("AM_Provisional".Translate());
-            if(list.ButtonText("AM_JumpFeed".Translate())&&anchor.Stack.Spawned)
-                CameraJumper.TryJump(anchor.Stack.Position,anchor.Stack.Map);
-            if(settings.ProductionMode!=ActionMode.Off)DrawProduction(list,forecast,anchor,plan);
+            else if(snapshot.Anchors.Count==0)
+            {
+                // A missing anchor is not grounds for hiding the independent herd plan.
+                // A diet-only scenario is advisory: location and accessibility are unknown.
+                list.Label("AM_NoAnchor".Translate());
+                if(settings.SolutionsMode!=ActionMode.Off)
+                {
+                    var options=new[]{"Hay","Kibble"}.Select(name=>DefDatabase<ThingDef>.GetNamedSilentFail(name))
+                        .Where(def=>def!=null&&def.statBases!=null&&def.statBases.Any(s=>s.stat==StatDefOf.Nutrition&&s.value>0)).ToArray();
+                    if(options.Length>0)
+                    {
+                        hypotheticalChoice=Math.Min(hypotheticalChoice,options.Length-1);
+                        var def=options[hypotheticalChoice];
+                        if(list.ButtonText("AM_FeedChoice".Translate(def.LabelCap)))
+                        {hypotheticalChoice=(hypotheticalChoice+1)%options.Length;hypotheticalPlan=null;}
+                        def=options[hypotheticalChoice];
+                        if(list.ButtonText("AM_CalculatePlan".Translate())&&snapshot.Consumers!=null)
+                        {
+                            var nutrition=def.statBases.First(s=>s.stat==StatDefOf.Nutrition).value;
+                            var access=snapshot.Consumers.Select(p=>p.RaceProps.CanEverEat(def)&&FoodUtility.WillEat(p,def,p)).ToArray();
+                            var candidate=new FeedCandidate(nutrition,access,int.MaxValue);
+                            hypotheticalPlan=FeedActionPlanner.Plan(snapshot.Scenario,candidate,settings.TargetDays,
+                                settings.PopulationScenario?settings.Births:0,settings.PopulationScenario?settings.Deaths:0,100000);
+                            hypotheticalDef=def;hypotheticalSource=snapshot;hypotheticalDays=settings.TargetDays;
+                        }
+                    }
+                }
+                if(hypotheticalPlan!=null&&hypotheticalSource==snapshot&&hypotheticalDays==settings.TargetDays)
+                    list.Label("AM_HypotheticalPlan".Translate(hypotheticalDef.LabelCap,
+                        hypotheticalPlan.Feasible?hypotheticalPlan.RequiredItems.ToString():"?",hypotheticalDays));
+                list.Label("AM_Provisional".Translate());
+            }
+            else
+            {
+                selected=Math.Min(selected,snapshot.Anchors.Count-1);
+                var anchor=snapshot.Anchors[selected];
+                if(list.ButtonText("AM_FeedChoice".Translate(anchor.Stack.LabelShort)))
+                {selected=(selected+1)%snapshot.Anchors.Count;plan=null;anchor=snapshot.Anchors[selected];}
+                if((settings.SolutionsMode==ActionMode.Auto&&(source!=snapshot||days!=settings.TargetDays))||list.ButtonText("AM_CalculatePlan".Translate()))
+                {
+                    int births=settings.PopulationScenario?settings.Births:0,deaths=settings.PopulationScenario?settings.Deaths:0;
+                    plan=FeedActionPlanner.Plan(snapshot.Scenario,anchor.Candidate,settings.TargetDays,births,deaths,100000);
+                    source=snapshot;days=settings.TargetDays;preview=null;
+                }
+                if(plan!=null&&source==snapshot&&days==settings.TargetDays)
+                {
+                    list.Label("AM_PlanConditions".Translate());
+                    list.Label("AM_PlanDeficit".Translate(plan.Deficit.ToString("0.00")));
+                    list.Label(plan.Feasible?"AM_PlanCount".Translate(plan.RequiredItems,anchor.Stack.def.LabelCap,days):"AM_NoSolution".Translate());
+                    if(!plan.Reliable||forecast.Failed||snapshot.Partial)list.Label("AM_Provisional".Translate());
+                    if(list.ButtonText("AM_JumpFeed".Translate())&&anchor.Stack.Spawned)
+                        CameraJumper.TryJump(anchor.Stack.Position,anchor.Stack.Map);
+                    if(settings.ProductionMode!=ActionMode.Off)DrawProduction(list,forecast,anchor,plan);
+                }
+            }
             DrawCapacity(list,forecast);
+            var state=forecast.map.GetComponent<AnimalActionState>();
+            if(state!=null&&state.History.Count>0)
+            {
+                list.GapLine();list.Label("AM_ActionHistory".Translate());
+                foreach(string entry in state.History)
+                {
+                    int reason=entry.IndexOf("auto status: AM_",StringComparison.Ordinal);
+                    list.Label(reason<0?entry:entry.Substring(0,reason)+"auto status: "+entry.Substring(reason+13).Translate().ToString());
+                }
+                if(settings.ProductionMode==ActionMode.Auto)list.Label("AM_LastAutoStatus".Translate(state.LastAutoReason.Translate()));
+            }
         }
         void DrawProduction(Listing_Standard list,FeedForecast forecast,FeedAnchor anchor,FeedActionPlan plan)
         {
@@ -79,14 +134,14 @@ namespace Pengin.AnimalManagement
         }
         void DrawCapacity(Listing_Standard list,FeedForecast forecast)
         {
-            var s=AnimalManagementMod.Settings;if(s.ProductionMode==ActionMode.Off)return;
+            var s=AnimalManagementMod.Settings;if(s.CapacityMode==ActionMode.Off)return;
             var snap=forecast.Snapshot;if(snap.Scenario==null||snap.Consumers==null)return;
             var species=snap.Consumers.Where(p=>p.IsColonyAnimal).Select(p=>p.def).Distinct().ToList();
             if(species.Count==0)return;speciesIndex=Math.Min(speciesIndex,species.Count-1);var def=species[speciesIndex];
             list.GapLine();list.Label("AM_CapacityConditions".Translate());
             if(list.ButtonText("AM_CapacitySpecies".Translate(def.LabelCap)))
             {speciesIndex=(speciesIndex+1)%species.Count;def=species[speciesIndex];capacity=null;}
-            if((s.ProductionMode==ActionMode.Auto&&(capacitySource!=snap||capacitySpecies!=def||capacity==null||capacity.Horizon!=s.TargetDays))||list.ButtonText("AM_CalculateCapacity".Translate()))
+            if((s.CapacityMode==ActionMode.Auto&&(capacitySource!=snap||capacitySpecies!=def||capacity==null||capacity.Horizon!=s.TargetDays))||list.ButtonText("AM_CalculateCapacity".Translate()))
             {
                 capacity=HerdCapacityPlanner.Calculate(snap.Scenario,snap.Consumers.Select(p=>p.IsColonyAnimal&&p.def==def).ToArray(),s.TargetDays,400,
                     s.PopulationScenario?s.Births:0,s.PopulationScenario?s.Deaths:0);
@@ -106,7 +161,7 @@ namespace Pengin.AnimalManagement
                 Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation("AM_SlaughterConfirm".Translate(def.LabelCap,config.maxTotal,target),()=>
                 {
                     var state=map.GetComponent<AnimalActionState>();int now=Find.TickManager.TicksGame;
-                    if(!s.AllowSlaughter||s.ProductionMode==ActionMode.Off||!map.autoSlaughterManager.configs.Contains(config)||
+                    if(!s.AllowSlaughter||s.CapacityMode==ActionMode.Off||!map.autoSlaughterManager.configs.Contains(config)||
                         SlaughterSignature(config)!=before||forecast.Failed||forecast.Snapshot!=snap||now-tick>250||now-state.LastAction<s.Cooldown)
                     {Messages.Message("AM_ActionChanged".Translate(),MessageTypeDefOf.RejectInput,false);return;}
                     config.maxTotal=target;config.allowSlaughterPregnant=false;config.allowSlaughterBonded=false;
@@ -120,6 +175,7 @@ namespace Pengin.AnimalManagement
         {
             if(list.ButtonText("AM_SolutionMode".Translate((("AM_Mode"+s.SolutionsMode).Translate()))))s.SolutionsMode=(ActionMode)(((int)s.SolutionsMode+1)%3);
             if(list.ButtonText("AM_ProductionMode".Translate((("AM_Mode"+s.ProductionMode).Translate()))))s.ProductionMode=(ActionMode)(((int)s.ProductionMode+1)%3);
+            if(list.ButtonText("AM_CapacityMode".Translate(("AM_Mode"+s.CapacityMode).Translate())))s.CapacityMode=(ActionMode)(((int)s.CapacityMode+1)%3);
             list.CheckboxLabeled("AM_AllowSlaughter".Translate(),ref s.AllowSlaughter);
             list.Label("AM_SafetyMargin".Translate((s.SafetyMargin*100).ToString("0")));s.SafetyMargin=list.Slider(s.SafetyMargin,0,.5f);
             list.Label("AM_MaxItems".Translate(s.MaxItems));s.MaxItems=(int)list.Slider(s.MaxItems,1,10000);

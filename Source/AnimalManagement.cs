@@ -12,7 +12,7 @@ namespace Pengin.AnimalManagement
     public sealed class AnimalSettings : ModSettings
     {
         public int WarnDays=3, Births, Deaths;
-        public ActionMode SolutionsMode=ActionMode.Confirm, ProductionMode=ActionMode.Confirm;
+        public ActionMode SolutionsMode=ActionMode.Confirm, ProductionMode=ActionMode.Confirm, CapacityMode=ActionMode.Confirm;
         public int TargetDays=15, MaxBills=2, MaxItems=1000, Cooldown=60000;
         public float SafetyMargin=.1f;
         public bool AllowSlaughter;
@@ -27,6 +27,7 @@ namespace Pengin.AnimalManagement
             Scribe_Values.Look(ref ShowAlert,"showAlert",true);
             Scribe_Values.Look(ref SolutionsMode,"solutionsMode",ActionMode.Confirm);
             Scribe_Values.Look(ref ProductionMode,"productionMode",ActionMode.Confirm);
+            Scribe_Values.Look(ref CapacityMode,"capacityMode",ActionMode.Confirm);
             Scribe_Values.Look(ref TargetDays,"targetDays",15);
             Scribe_Values.Look(ref SafetyMargin,"safetyMargin",.1f);
             Scribe_Values.Look(ref MaxBills,"maxBills",2);
@@ -108,6 +109,11 @@ namespace Pengin.AnimalManagement
         static double DailyNeed(Pawn p){return Math.Max(0,p.needs.food.FoodFallPerTickAssumingCategory(HungerCategory.Fed)*60000.0);}
         static bool Grazes(Pawn p){return p.RaceProps.CanEverEat(ThingDefOf.Plant_Grass)&&FoodUtility.WillEat(p,ThingDefOf.Plant_Grass,p);}
 
+        sealed class IndexedPool
+        {
+            public FeedPool Pool;
+            public int Index;
+        }
         sealed class AccessCache
         {
             // Reachability within one district is shared by every stack in it, and food
@@ -192,7 +198,7 @@ namespace Pengin.AnimalManagement
             var cache=new AccessCache();
             var stock=new List<FeedPool>();
             // Combine feed pools only when every consumer has the same verified access.
-            var byAccess=new Dictionary<string,FeedPool>();
+            var byAccess=new Dictionary<AccessSignature,IndexedPool>();
             int scanned=0;
             // FoodSource lists ingestible things only (not rocks, chunks, filth or buildings).
             // Standing plants are skipped before counting, so trees and grass cannot use up
@@ -250,12 +256,15 @@ namespace Pengin.AnimalManagement
                 if(result.Anchors.Count<32&&(item.def.defName=="Hay"||item.def.defName=="Kibble")&&
                     !item.IsForbidden(Faction.OfPlayer)&&!result.Anchors.Any(a=>a.Stack.def==item.def&&a.Candidate.Access.SequenceEqual(access)))
                     result.Anchors.Add(new FeedAnchor{Stack=item,Candidate=new FeedCandidate(perItem,access,expiry)});
-                string key=new string(access.Select(x=>x?'1':'0').ToArray())+":"+expiry;
-                FeedPool pool;
-                if(!byAccess.TryGetValue(key,out pool))
-                {pool=new FeedPool{Access=access,LastFreshDay=expiry};byAccess[key]=pool;stock.Add(pool);}
-                pool.Nutrition+=perItem*item.stackCount;
-                result.Materials[item]=new FeedMaterial{Pool=stock.IndexOf(pool),PerItem=perItem};
+                var key=AccessSignature.Create(access,expiry);
+                IndexedPool slot;
+                if(!byAccess.TryGetValue(key,out slot))
+                {
+                    slot=new IndexedPool{Pool=new FeedPool{Access=access,LastFreshDay=expiry},Index=stock.Count};
+                    byAccess.Add(key,slot);stock.Add(slot.Pool);
+                }
+                slot.Pool.Nutrition+=perItem*item.stackCount;
+                result.Materials[item]=new FeedMaterial{Pool=slot.Index,PerItem=perItem};
                 result.FeedStacks++;result.StockNutrition+=perItem*item.stackCount;
             }
             result.AccessChecks=cache.Misses;
