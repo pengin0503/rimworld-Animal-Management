@@ -21,6 +21,7 @@ namespace Pengin.AnimalManagement
         public List<string> Revoked=new List<string>(),History=new List<string>();
         public int LastAction=-180000;
         int nextAuto;
+        bool faulted;
         public AnimalActionState(Map map):base(map){}
         public override void ExposeData()
         {
@@ -49,6 +50,12 @@ namespace Pengin.AnimalManagement
             }
         }
         public override void MapComponentTick()
+        {
+            if(faulted)return;
+            try{TickActions();}
+            catch(Exception e){faulted=true;Log.Warning("Animal Management actions stopped: "+e.GetType().Name);}
+        }
+        void TickActions()
         {
             var s=AnimalManagementMod.Settings;if(s==null)return;int now=Find.TickManager.TicksGame;
             if(now%250==map.uniqueID%250)CheckOwnership();

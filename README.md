@@ -4,7 +4,17 @@
 
 ## 日本語
 
-Animal Management は RimWorld 1.7 用の家畜飼料予測MODです。家畜の頭数と必要な栄養量、備蓄飼料、放牧地の草をまとめ、今後の飼料不足を前提条件付きで予測します。表示専用で、自動給餌・自動屠殺・飼育設定の変更は一切行いません。Harmony は不要です。
+Animal Management は RimWorld 1.7 用の家畜飼料予測MODです。家畜の頭数と必要な栄養量、備蓄飼料、放牧地の草をまとめ、今後の飼料不足を前提条件付きで予測します。備蓄対策と限定的な製造指示を支援します。初期設定は確認付きで、自動化は機能・マップ内の対象ごとに許可が必要です。Harmony は不要です。
+
+### 備蓄対策・生産・適正頭数
+
+予測ウィンドウの冒頭で7・15・30日の目標と飼料・配送先を選び、追加必要数を計算します。干し草・キブルの既存の到達可能な備蓄を基に検証し、将来の天候・腐敗・部分走査が関わる予測は暫定表示とし、製造操作には使用しません。畑の参考面積は収穫の保証ではありません。
+
+生産は対応するバニラのキブル指示に限定します。「材料を確認して生産プレビュー」で消費材料・設備を確認し、承認すると指示を作成します。自動化には設定の「自動」と設備・配送先の個別許可が必要です。手動指示との重複を防ぎ、指示の編集・停止で管理を解除します。指示は目標達成または1日で停止し、上限・クールダウンに従います。
+
+頭数シナリオは他種・人間の需要を維持し、共有飼料を一度だけ配分します。推計は種別の代替案であり合算できません。自動屠殺の設定変更には別の設定許可と毎回の確認が必要です。妊娠・絆のある個体を保護しますが、設定変更後にバニラが不可逆な屠殺を行う可能性があります。
+
+新機能の通常ゲーム内UI・セーブ再読込・270以上のMODでの検証は未実施です。
 
 ### 表示内容
 
@@ -50,7 +60,7 @@ Animal Management は RimWorld 1.7 用の家畜飼料予測MODです。家畜の
 2. 画面右のアラート、または「設定」→「MOD設定」→「Animal Management」→「予測ウィンドウを開く」で予測を確認します。予測は10,000 Tickごとに更新されます。「再計算」ですぐに更新することもできます。
 3. 警告日数、禁止された飼料を含めるか、アラートの有無、出生・死亡シナリオを設定できます。
 
-予測結果はセーブデータに保存しません（設定のみ保存されます）。途中導入・途中削除ができます。
+予測結果は再計算します。設定に加え、製造指示の所有情報・対象許可・操作履歴をマップ別に保存します。途中削除前に管理中の製造指示を停止してください。バニラの製造指示はMOD削除後も残ります。
 
 ### 制限事項と未検証範囲
 
@@ -66,7 +76,18 @@ Animal Management は RimWorld 1.7 用の家畜飼料予測MODです。家畜の
 
 ## English
 
-Animal Management is a livestock feed forecasting mod for RimWorld 1.7. It summarizes animal counts, nutrition demand, stored feed and pasture, and forecasts future feed shortages under stated assumptions. It is information only: it never feeds animals, slaughters them or changes animal settings. Harmony is not required.
+### Reserve solutions, production and herd capacity
+
+Choose a 7/15/30-day horizon, feed and destination at the top of the forecast window. Replacement quantities use verified accessible hay/kibble stocks. Weather, spoilage or incomplete observations make a scenario provisional and block production actions. The illustrated hay area is not a harvest guarantee.
+
+Production supports the vanilla kibble recipe only. Preview ingredients and the workbench before approving an instruction. Automation requires both the feature Auto mode and permission for the specific bench/destination on this map. Existing manual bills are neither duplicated nor changed. Editing or suspending an instruction releases ownership. Managed instructions stop on satisfaction or after one day, with caps and cooldowns.
+
+Species capacity scenarios keep other species and human demand fixed and allocate shared feed once; their results cannot be added together. Slaughter configuration changes require a separate opt-in and confirmation every time. Pregnancy/bond protection is enabled, but vanilla may subsequently slaughter animals irreversibly.
+
+Settings, bill ownership, target permissions and action history are saved per map; forecasts are recalculated. Stop managed bills before removing the mod: vanilla bills remain after removal. The new UI, whole-map save/reload and 270+ mod compatibility have not been verified in normal gameplay.
+
+
+Animal Management is a livestock feed forecasting mod for RimWorld 1.7. It summarizes animal counts, nutrition demand, stored feed and pasture, and forecasts future feed shortages under stated assumptions. It adds reserve advice and bounded production assistance. Confirmation is the default; automation requires explicit feature and target permissions. Harmony is not required.
 
 ### What it shows
 
@@ -112,7 +133,7 @@ Downed animals are treated as unable to reach feed. When nutrition differs by ea
 2. Use the alert on the right, or Settings → Mod Settings → Animal Management → "Open forecast window". Forecasts refresh every 10,000 ticks; use "Recalculate" to refresh immediately.
 3. Configure the warning threshold, whether forbidden feed is included, the alert and the birth/death scenario.
 
-Forecasts are not saved; only settings are. The mod can be added to or removed from an existing save.
+Forecasts are recalculated. Settings and map-local bill ownership, target permissions and history are saved. Stop managed instructions before removing the mod; vanilla bills remain after removal.
 
 ### Limitations and unverified scope
 

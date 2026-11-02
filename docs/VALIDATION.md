@@ -145,3 +145,13 @@ Review follow-up (PR #16):
 - The feed alert switches to an affected map before opening the window when the current map is not affected.
 - The bounded real-game probe was re-run with identical results.
 - Animals with zero modeled demand (excluded grazers) no longer count as consumers of a pool when deciding which food humans eat first. One more regression assertion was added (26 in total).
+
+## 2026-11-02 actionable automation
+
+- Public-reference Release build: zero warnings/errors; 37 nutrition/planning assertions, 8 ownership-policy assertions, 4 herd scenarios pass locally. RED was observed before each new pure model.
+- New Scribe settings round-trip fixture extended; **not executed** against actual game assemblies in this session.
+- R2 research README, type index and chunks 000/001/004/006/007/008/017 verified API names for RecipeDef, Bill_Production/BillStack, filters, auto-slaughter and PriorityWork. Public reference compilation checks signatures; metadata is not a runtime behavioral test.
+- Production rejects uncertain forecasts. A conservative conversion scenario debits ingredients from every accessible pool that vanilla might choose, protects human demand, and requires net animal nutrition improvement. Only vanilla kibble and unmodified Building_WorkTable are writable.
+- Per-map permissions/ownership/history, bounded target-count bills, cooldown, manual fingerprint checks and expiry were reviewed inline (no subagents, per user instruction).
+- Unverified: normal in-game UI, actual bill/hauling behavior, whole-map Scribe reference resolution, install/removal, actual slaughter behavior, conflicts in a 270+ MOD loadout, TPS/GC comparison. These remain acceptance work; existing user play validation applies to earlier features only.
+- No private game DLLs or credentials were added to source/CI/packages.

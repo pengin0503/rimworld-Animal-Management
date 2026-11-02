@@ -1,7 +1,6 @@
 name: Validate and build (RimWorld 1.7 development)
 on:
   push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:

@@ -16,7 +16,6 @@ namespace Pengin.AnimalManagement
         public int TargetDays=15, MaxBills=2, MaxItems=1000, Cooldown=60000;
         public float SafetyMargin=.1f;
         public bool AllowSlaughter;
-        public List<string> AllowedFoods=new List<string>(), AllowedBenches=new List<string>();
         public bool IncludeForbidden, PopulationScenario, ShowAlert=true;
         public override void ExposeData()
         {
@@ -34,10 +33,6 @@ namespace Pengin.AnimalManagement
             Scribe_Values.Look(ref MaxItems,"maxItems",1000);
             Scribe_Values.Look(ref Cooldown,"actionCooldown",60000);
             Scribe_Values.Look(ref AllowSlaughter,"allowSlaughter",false);
-            Scribe_Collections.Look(ref AllowedFoods,"allowedFoods",LookMode.Value);
-            Scribe_Collections.Look(ref AllowedBenches,"allowedBenches",LookMode.Value);
-            if(AllowedFoods==null)AllowedFoods=new List<string>();
-            if(AllowedBenches==null)AllowedBenches=new List<string>();
             TargetDays=TargetDays==7||TargetDays==30?TargetDays:15;
             MaxBills=Math.Max(1,Math.Min(10,MaxBills));MaxItems=Math.Max(1,Math.Min(10000,MaxItems));
             Cooldown=Math.Max(10000,Cooldown);SafetyMargin=Math.Max(0,Math.Min(.5f,SafetyMargin));
