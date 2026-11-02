@@ -21,6 +21,15 @@ static class WeatherSafetyTests
         Assert(!WeatherFeedSafety.CanImprove(growing,dry,feed,4,harmful,7),"feed production must not harm shared food safety");
         Assert(!WeatherFeedSafety.CanImprove(growing,dry,feed,4,new MaterialDebit{Blocked="x"},7),"unbounded ingredients never auto");
         Assert(!WeatherFeedSafety.CanImprove(growing,null,feed,4,debit,7),"no conservative scenario is not proof");
-        Console.WriteLine("PASS 5 weather-feed safety assertions");
+        // Total animal nutrition improvement must not hide a different species losing food.
+        var species=new FeedScenario(new[]{new Demand{Daily=1},new Demand{Daily=1}},
+            new[]{Stock(2,true,false)},None,true);
+        var shift=new IngredientDemand{MaxRemoval=1};
+        shift.Sources.Add(new IngredientSource(0,2));
+        var shiftDebit=IngredientDebit.Build(new[]{Stock(2,true,false)},new[]{shift});
+        Assert(!WeatherFeedSafety.CanImprove(species,species,
+            new FeedCandidate(1,new[]{false,true},int.MaxValue),2,shiftDebit,2),
+            "one animal species must never lose food just because another gains more");
+        Console.WriteLine("PASS 6 weather-feed safety assertions");
     }
 }
