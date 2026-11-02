@@ -12,7 +12,7 @@ namespace Pengin.AnimalManagement
     public sealed class AnimalSettings : ModSettings
     {
         public int WarnDays=3, Births, Deaths;
-        public ActionMode SolutionsMode=ActionMode.Confirm, ProductionMode=ActionMode.Confirm;
+        public ActionMode SolutionsMode=ActionMode.Confirm, ProductionMode=ActionMode.Confirm, CapacityMode=ActionMode.Confirm;
         public int TargetDays=15, MaxBills=2, MaxItems=1000, Cooldown=60000;
         public float SafetyMargin=.1f;
         public bool AllowSlaughter;
@@ -27,6 +27,7 @@ namespace Pengin.AnimalManagement
             Scribe_Values.Look(ref ShowAlert,"showAlert",true);
             Scribe_Values.Look(ref SolutionsMode,"solutionsMode",ActionMode.Confirm);
             Scribe_Values.Look(ref ProductionMode,"productionMode",ActionMode.Confirm);
+            Scribe_Values.Look(ref CapacityMode,"capacityMode",ActionMode.Confirm);
             Scribe_Values.Look(ref TargetDays,"targetDays",15);
             Scribe_Values.Look(ref SafetyMargin,"safetyMargin",.1f);
             Scribe_Values.Look(ref MaxBills,"maxBills",2);
