@@ -194,8 +194,9 @@ Baseline main `60700e4`. Evidence source: R2 `Game-Linux/Version.txt` = `1.7.498
 
 ### Final review (two rounds, inline, no subagents)
 - Round 1 (correctness/safety): fixed deletion of an in-use bill (would drop carried product). Confirmed manual states override natural ones, nothing is restored, and progress cannot be inferred from an unobserved change.
+- Codex PR review: right after loading no forecast snapshot exists (not saved; first scheduled refresh up to 10,000 ticks), which made restored bills Withdrawn and deleted them. Ownership now computes the forecast once first; if still unavailable, the missing forecast is not a withdrawal (failed/partial/unreliable still are).
 - Round 2 (performance/maintainability): per-tick work only while bills are managed (≤ MaxBills: one field read, one cell lookup, no allocation); preview scans `Materials` once. Fingerprint field lists cached; fingerprint made culture-independent.
 
 ### Checks run
-- Local: `validate_package.py`; `Tests` (56 lifecycle, 6 herd, 4 access, 6,516 ingredient-debit incl. 6,000 randomized, 38 nutrition); Release build against public references and against the real 1.7.4985 DLLs; `Tests.Game` compile (public) and execution (real DLLs); `package_dev.py`.
+- Local: `validate_package.py`; `Tests` (58 lifecycle, 6 herd, 4 access, 6,516 ingredient-debit incl. 6,000 randomized, 38 nutrition); Release build against public references and against the real 1.7.4985 DLLs; `Tests.Game` compile (public) and execution (real DLLs); `package_dev.py`.
 - **Not verified:** normal in-game bill creation/completion/hauling, whole-map save/load with cross-reference resolution, 270+ MOD loadout, TPS/GC. Remains under #6.

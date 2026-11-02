@@ -45,6 +45,9 @@ namespace Pengin.AnimalManagement
             if(stopping==null)return observed;
             return observed==OwnedBillState.Owned||observed==OwnedBillState.Expired||observed==OwnedBillState.Withdrawn?stopping.Value:observed;
         }
+        // No forecast yet (e.g. just loaded) is not evidence against a bill.
+        public static bool ForecastAuthorizes(bool available,bool failed,bool partial,bool reliable)
+        {return !available||(!failed&&!partial&&reliable);}
         public static bool Revokes(OwnedBillState s)
         {return s==OwnedBillState.ManualEdit||s==OwnedBillState.Unverified||s==OwnedBillState.Suspended||s==OwnedBillState.Missing;}
         // Only a bill whose settings still match ours and that nobody suspended is removed.

@@ -58,6 +58,10 @@ static class OwnershipTests
         Check(ManagedBillPolicy.Settle(OwnedBillState.ManualEdit,OwnedBillState.Withdrawn)==OwnedBillState.ManualEdit&&
             ManagedBillPolicy.Settle(OwnedBillState.Missing,OwnedBillState.Completed)==OwnedBillState.Missing,"manual intervention during a stop wins");
         Check(ManagedBillPolicy.Settle(OwnedBillState.Expired,null)==OwnedBillState.Expired,"no stop in progress");
+        // Codex review: a just-loaded map has no forecast yet; that must not delete restored bills.
+        Check(ManagedBillPolicy.ForecastAuthorizes(false,false,false,false),"missing forecast is not a withdrawal");
+        Check(!ManagedBillPolicy.ForecastAuthorizes(true,true,false,false)&&!ManagedBillPolicy.ForecastAuthorizes(true,false,true,true)&&
+            !ManagedBillPolicy.ForecastAuthorizes(true,false,false,false)&&ManagedBillPolicy.ForecastAuthorizes(true,false,false,true),"failed/partial/unreliable forecast still withdraws");
         var lost=C(3,3,bench:false);
         Check(lost==OwnedBillState.BenchLost&&!ManagedBillPolicy.Revokes(lost)&&!ManagedBillPolicy.RemovesOwnBill(lost),"lost bench is released untouched");
 

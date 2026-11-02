@@ -106,7 +106,13 @@ namespace Pengin.AnimalManagement
         {
             var settings=AnimalManagementMod.Settings;int now=Find.TickManager.TicksGame;
             var forecast=map.GetComponent<FeedForecast>();
-            bool reliable=forecast!=null&&!forecast.Failed&&!forecast.Snapshot.Partial&&forecast.Snapshot.Scenario!=null&&forecast.Snapshot.Scenario.Reliable;
+            // Right after loading, no snapshot exists yet (it is not saved). Compute one before
+            // judging restored bills; if none can be computed, the missing forecast alone does
+            // not withdraw them. A failed or partial forecast still does.
+            if(Managed.Count>0&&forecast!=null&&!forecast.Failed&&forecast.Snapshot.Scenario==null)forecast.Recalculate();
+            bool available=forecast!=null&&(forecast.Failed||forecast.Snapshot.Scenario!=null);
+            bool reliable=ManagedBillPolicy.ForecastAuthorizes(available,available&&forecast.Failed,available&&forecast.Snapshot.Partial,
+                available&&forecast.Snapshot.Scenario!=null&&forecast.Snapshot.Scenario.Reliable);
             for(int i=Managed.Count-1;i>=0;i--)
             {
                 var entry=Managed[i];
