@@ -94,8 +94,10 @@ namespace Pengin.AnimalManagement
                 list.GapLine();list.Label("AM_ActionHistory".Translate());
                 foreach(string entry in state.History)
                 {
-                    int reason=entry.IndexOf("auto status: AM_",StringComparison.Ordinal);
-                    list.Label(reason<0?entry:entry.Substring(0,reason)+"auto status: "+entry.Substring(reason+13).Translate().ToString());
+                    // Entries end with a translation key (auto status or bill lifecycle).
+                    int reason=entry.LastIndexOf(" AM_",StringComparison.Ordinal);
+                    string key=reason<0?null:entry.Substring(reason+1);
+                    list.Label(key==null||!key.CanTranslate()?entry:entry.Substring(0,reason+1)+key.Translate().ToString());
                 }
                 if(settings.ProductionMode==ActionMode.Auto)list.Label("AM_LastAutoStatus".Translate(state.LastAutoReason.Translate()));
             }

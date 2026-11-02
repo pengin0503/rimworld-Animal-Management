@@ -105,4 +105,12 @@
   <AM_AutoNoAnchor>到達確認済みの飼料配送先がありません</AM_AutoNoAnchor>
   <AM_AutoNoSafeAction>許可された安全な製造操作がありません</AM_AutoNoSafeAction>
   <AM_AutoCreated>飼料の製造指示を作成しました</AM_AutoCreated>
+  <AM_BillCompleted>製造完了。指示を削除し、次回の補充を許可</AM_BillCompleted>
+  <AM_BillExpired>1日の支援期間が終了。未変更の指示を削除し、次回の補充を許可</AM_BillExpired>
+  <AM_BillWithdrawn>モード・許可・信頼できる予測のいずれかが失われたため指示を削除</AM_BillWithdrawn>
+  <AM_BillBenchLost>設備が消失または移動。指示には触れません</AM_BillBenchLost>
+  <AM_BillManualEdit>MOD外で指示の設定または回数が変更されました。指示はそのままにし、再許可まで設備の自動管理を停止</AM_BillManualEdit>
+  <AM_BillUnverified>製造完了を確認できないまま回数が変化。手動変更として扱い、再許可まで設備の自動管理を停止</AM_BillUnverified>
+  <AM_BillSuspended>MOD外で指示が一時停止されました。指示はそのままにし、再許可まで設備の自動管理を停止</AM_BillSuspended>
+  <AM_BillMissing>MOD外で指示が削除されました。再許可まで設備の自動管理を停止</AM_BillMissing>
 </LanguageData>

@@ -31,19 +31,44 @@ namespace Pengin.AnimalManagement
             var slot=value as SlotGroup;if(slot!=null)return slot.parent.ToString();
             return value.ToString();
         }
+        // Player-controlled settings only (#21). repeatCount is runtime progress, tracked
+        // separately; paused is vanilla's own TargetCount toggle; the list position moves
+        // when other bills are added or removed. Pawn restrictions are private fields.
+        static readonly string[] runtime={"billStack","loadID","nextTickToSearchForIngredients","ingredientFilter","repeatCount","paused"};
         public static string Fingerprint(Bill_Production b)
+        {
+            var fields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
+                .Where(f=>!runtime.Contains(f.Name)).OrderBy(f=>f.Name);
+            string result=ManagedBillPolicy.Version+string.Join("|",fields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
+            result+="|restriction="+Value(b.PawnRestriction)+","+b.SlavesOnly+","+b.MechsOnly+","+b.NonMechsOnly;
+            return result+"|"+Settings(b);
+        }
+        // Owned-settings comparison. A 1.1.0 entry (no version prefix) is compared with the
+        // same legacy algorithm after removing its progress and position tokens.
+        public static bool MatchesSettings(string saved,Bill_Production b)
+        {
+            if(string.IsNullOrEmpty(saved))return false;
+            if(saved.StartsWith(ManagedBillPolicy.Version,StringComparison.Ordinal))return saved==Fingerprint(b);
+            return ManagedBillPolicy.NormalizeLegacy(saved)==ManagedBillPolicy.NormalizeLegacy(LegacyFingerprint(b));
+        }
+        static string LegacyFingerprint(Bill_Production b)
         {
             var fields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
                 .Where(f=>f.Name!="billStack"&&f.Name!="loadID"&&f.Name!="nextTickToSearchForIngredients"&&f.Name!="ingredientFilter").OrderBy(f=>f.Name);
             string result=string.Join("|",fields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
-            result+="|"+b.RenamableLabel+"|"+b.GetStoreMode().defName+"|"+Value(b.GetSlotGroup())+"|"+Value(b.GetIncludeSlotGroup());
+            return result+"|"+Settings(b)+"|index="+b.billStack.IndexOf(b);
+        }
+        static string Settings(Bill_Production b)
+        {
+            string result="";
+            result+=b.RenamableLabel+"|"+b.GetStoreMode().defName+"|"+Value(b.GetSlotGroup())+"|"+Value(b.GetIncludeSlotGroup());
             result+="|"+string.Join(",",b.ingredientFilter.AllowedThingDefs.Select(d=>d.defName).OrderBy(n=>n));
             foreach(FieldInfo f in typeof(ThingFilter).GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Where(f=>f.Name=="disallowedSpecialFilters"||f.Name=="allowedHitPointsPercents"||f.Name=="allowedQualities"))
             {
                 var sequence=f.GetValue(b.ingredientFilter) as System.Collections.IEnumerable;
                 result+="|"+f.Name+"="+(sequence==null?Value(f.GetValue(b.ingredientFilter)):string.Join(",",sequence.Cast<object>().Select(Value).OrderBy(n=>n)));
             }
-            return result+"|index="+b.billStack.IndexOf(b);
+            return result;
         }
         public static string PermissionKey(Building_WorkTable bench,FeedAnchor anchor)
         {return bench.ThingID+"@"+bench.Position+"/"+anchor.Stack.ThingID+"@"+anchor.Stack.Position;}
@@ -188,7 +213,7 @@ namespace Pengin.AnimalManagement
             bill.SetIncludeGroup(anchor.Stack.GetSlotGroup());
             bill.SetStoreMode(BillStoreModeDefOf.SpecificStockpile,anchor.Stack.GetSlotGroup());
             next.Bench.BillStack.AddBill(bill);
-            state.Managed.Add(new ManagedFeedBill{Bench=next.Bench,BillId=bill.GetUniqueLoadID(),Fingerprint=Fingerprint(bill),Expires=now+60000,Automatic=automatic,Permission=PermissionKey(shown.Bench,anchor)});
+            state.Managed.Add(new ManagedFeedBill{Bench=next.Bench,BillId=bill.GetUniqueLoadID(),Fingerprint=Fingerprint(bill),Expires=now+60000,Automatic=automatic,Permission=PermissionKey(shown.Bench,anchor),Batches=next.Batches,LastSeen=bill.repeatCount});
             state.LastAction=now;state.AddHistory(next.Bench.ThingID+" / "+bill.GetUniqueLoadID()+" / "+next.Items);
             return true;
         }

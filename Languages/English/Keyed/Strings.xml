@@ -105,4 +105,12 @@
   <AM_AutoNoAnchor>No verified destination for feed</AM_AutoNoAnchor>
   <AM_AutoNoSafeAction>No permitted safe production action</AM_AutoNoSafeAction>
   <AM_AutoCreated>Feed production instruction created</AM_AutoCreated>
+  <AM_BillCompleted>production finished; bill removed, next replenishment allowed</AM_BillCompleted>
+  <AM_BillExpired>one-day assistance window ended; unchanged bill removed, next replenishment allowed</AM_BillExpired>
+  <AM_BillWithdrawn>mode, permission or reliable forecast no longer authorizes it; bill removed</AM_BillWithdrawn>
+  <AM_BillBenchLost>bench gone or moved; bill left untouched</AM_BillBenchLost>
+  <AM_BillManualEdit>bill settings or count changed outside this mod; left untouched, bench automation stopped until allowed again</AM_BillManualEdit>
+  <AM_BillUnverified>repeat count changed without an observed finished batch; treated as manual, bench automation stopped until allowed again</AM_BillUnverified>
+  <AM_BillSuspended>bill suspended outside this mod; left untouched, bench automation stopped until allowed again</AM_BillSuspended>
+  <AM_BillMissing>bill deleted outside this mod; bench automation stopped until allowed again</AM_BillMissing>
 </LanguageData>
