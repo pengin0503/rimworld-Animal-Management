@@ -27,7 +27,9 @@ namespace Pengin.AnimalManagement
         {
             var pools=stock.ToList();
             if(candidate!=null&&items>0)pools.Add(new FeedPool{Nutrition=candidate.Nutrition*items,Access=candidate.Access,LastFreshDay=candidate.FreshDays});
-            var scaled=demands.Select((d,i)=>new Demand{Human=d.Human,Daily=d.Daily*(factors==null?1:factors[i])}).ToArray();
+            // Demands are deep-copied on construction; NutritionForecast only reads them.
+            // Avoid one allocation per what-if when all demand factors are unchanged.
+            var scaled=factors==null?demands:demands.Select((d,i)=>new Demand{Human=d.Human,Daily=d.Daily*factors[i]}).ToArray();
             return NutritionForecast.Run(scaled,pools,d=>growth[d-1],days,births,deaths);
         }
         // Bound every ingredient removal vanilla may choose against this snapshot's stock.
@@ -80,7 +82,8 @@ namespace Pengin.AnimalManagement
                 var p=scenario.Run(days,births,deaths,candidate,n);
                 return scenario.AnimalDeficit(p)<1e-6&&scenario.HumanDeficit(p)<=scenario.HumanDeficit(baseline)+1e-6;
             };
-            if(covers(0)){plan.Feasible=true;return plan;}
+            // The baseline is precisely the zero-addition simulation; reuse it.
+            if(scenario.AnimalDeficit(baseline)<1e-6){plan.Feasible=true;return plan;}
             if(!covers(cap))return plan;
             int low=0,high=cap;
             while(high-low>1){int mid=low+(high-low)/2;if(covers(mid))high=mid;else low=mid;}
