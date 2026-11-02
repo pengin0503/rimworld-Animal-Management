@@ -20,8 +20,12 @@ namespace Pengin.AnimalManagement
         {
             var before=scenario.Run(days,0,0);
             var after=scenario.Convert(days,output,items,debit);
-            return scenario.AnimalDeficit(after)<scenario.AnimalDeficit(before)-Epsilon&&
-                scenario.HumanDeficit(after)<=scenario.HumanDeficit(before)+Epsilon;
+            // A global improvement can still deprive an individual species with
+            // a restricted diet. Demand allocation must be non-worsening for each
+            // modelled consumer, not only for aggregate animals and humans.
+            for(int i=0;i<scenario.Count;i++)
+                if(after.Unmet[i]>before.Unmet[i]+Epsilon)return false;
+            return scenario.AnimalDeficit(after)<scenario.AnimalDeficit(before)-Epsilon;
         }
         public static bool DelaySafe(FeedScenario observed,FeedScenario noGrazing,
             FeedCandidate output,MaterialDebit debit,int days)
@@ -33,8 +37,9 @@ namespace Pengin.AnimalManagement
         {
             var before=scenario.Run(days,0,0);
             var withoutProduct=scenario.Convert(days,output,0,debit);
-            return scenario.HumanDeficit(withoutProduct)<=scenario.HumanDeficit(before)+Epsilon&&
-                scenario.AnimalDeficit(withoutProduct)<=scenario.AnimalDeficit(before)+Epsilon;
+            for(int i=0;i<scenario.Count;i++)
+                if(withoutProduct.Unmet[i]>before.Unmet[i]+Epsilon)return false;
+            return true;
         }
     }
 }
