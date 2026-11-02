@@ -1,3 +1,9 @@
+# Unreleased (development)
+
+- Fixed (#25): kibble ingredient debits of different defs in one nutrition group are summed; an ingredient whose permitted stacks span differently accessible or spoiling groups now blocks production instead of being guessed. / 同じ栄養グループの複数材料を合算して控除し、材料候補が複数グループに分かれる場合は推測せず製造を禁止。
+- Fixed (#21): normal batch progress, completion and expiry no longer count as manual edits; finished/expired managed bills are removed and the next day's replenishment can be created. Manual edits, suspension and deletion still stop automation for that bench. / 正常な進捗・完了・期限切れを手動編集と区別し、翌日の再補充を可能に。手動編集・停止・削除は従来どおり設備の自動管理を停止。
+- Saves from 1.1.0 load; benches revoked by earlier natural completions stay revoked until allowed again. In-game acceptance remains under #6.
+
 # 1.1.0 actionable automation (development)
 
 - Added shared-allocation reserve scenarios, winter targets and diet-aware herd capacity.

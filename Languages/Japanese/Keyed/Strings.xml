@@ -74,6 +74,8 @@
   <AM_Cooldown>操作クールダウン：{0}日</AM_Cooldown>
   <AM_ProductionBlocked>生産不可：完全で信頼できる予測、対応するバニラのレシピ・設備、到達可能な許可済み材料、保管先、材料消費を含めた栄養改善が必要です。</AM_ProductionBlocked>
   <AM_DuplicateBill>同じレシピの既存指示があります。変更・重複作成しません。</AM_DuplicateBill>
+  <AM_IngredientPools>生産不可：材料として使われ得るスタックが、到達可能な消費者や腐敗期限の異なる食料グループに分かれています。バニラが実際に選ぶ材料で入植者・動物の食料が悪化しないことを証明できません。</AM_IngredientPools>
+  <AM_IngredientUnbounded>生産不可：予測から材料消費量の上限を確定できません（未対応のレシピまたは材料値）。</AM_IngredientUnbounded>
   <AM_HayArea>全量収穫の参考：{0}マス、基本成長{1}日。地域の成長時間・肥沃度・損失・低温を含まないため必要面積の保証ではありません。</AM_HayArea>
   <AM_BenchChoice>設備：{0}（クリックで切替）</AM_BenchChoice>
   <AM_PreviewProduction>材料を確認して生産プレビュー</AM_PreviewProduction>
@@ -103,4 +105,13 @@
   <AM_AutoNoAnchor>到達確認済みの飼料配送先がありません</AM_AutoNoAnchor>
   <AM_AutoNoSafeAction>許可された安全な製造操作がありません</AM_AutoNoSafeAction>
   <AM_AutoCreated>飼料の製造指示を作成しました</AM_AutoCreated>
+  <AM_BillStopping>作業中のため新規の製造を停止し、現在の作業終了後に指示を削除</AM_BillStopping>
+  <AM_BillCompleted>製造完了。指示を削除し、次回の補充を許可</AM_BillCompleted>
+  <AM_BillExpired>1日の支援期間が終了。未変更の指示を削除し、次回の補充を許可</AM_BillExpired>
+  <AM_BillWithdrawn>モード・許可・信頼できる予測のいずれかが失われたため指示を削除</AM_BillWithdrawn>
+  <AM_BillBenchLost>設備が消失または移動。指示には触れません</AM_BillBenchLost>
+  <AM_BillManualEdit>MOD外で指示の設定または回数が変更されました。指示はそのままにし、再許可まで設備の自動管理を停止</AM_BillManualEdit>
+  <AM_BillUnverified>製造完了を確認できないまま回数が変化。手動変更として扱い、再許可まで設備の自動管理を停止</AM_BillUnverified>
+  <AM_BillSuspended>MOD外で指示が一時停止されました。指示はそのままにし、再許可まで設備の自動管理を停止</AM_BillSuspended>
+  <AM_BillMissing>MOD外で指示が削除されました。再許可まで設備の自動管理を停止</AM_BillMissing>
 </LanguageData>

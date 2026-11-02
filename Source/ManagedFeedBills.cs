@@ -31,19 +31,55 @@ namespace Pengin.AnimalManagement
             var slot=value as SlotGroup;if(slot!=null)return slot.parent.ToString();
             return value.ToString();
         }
+        // Player-controlled settings only (#21). repeatCount is runtime progress, tracked
+        // separately; paused is vanilla's own TargetCount toggle; the list position moves
+        // when other bills are added or removed. Pawn restrictions are private fields.
+        // v2 is culture-independent (ordinal order, invariant formatting) so a locale change
+        // between sessions is not mistaken for a manual edit. Field lists are built once.
+        static readonly string[] runtime={"billStack","loadID","nextTickToSearchForIngredients","ingredientFilter","repeatCount","paused"};
+        static FieldInfo[] ownedFields,legacyFields,filterFields;
+        static FieldInfo[] OwnedFields{get{return ownedFields??(ownedFields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
+            .Where(f=>!runtime.Contains(f.Name)).OrderBy(f=>f.Name,StringComparer.Ordinal).ToArray());}}
+        static FieldInfo[] FilterFields{get{return filterFields??(filterFields=typeof(ThingFilter).GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)
+            .Where(f=>f.Name=="disallowedSpecialFilters"||f.Name=="allowedHitPointsPercents"||f.Name=="allowedQualities").ToArray());}}
         public static string Fingerprint(Bill_Production b)
         {
-            var fields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
-                .Where(f=>f.Name!="billStack"&&f.Name!="loadID"&&f.Name!="nextTickToSearchForIngredients"&&f.Name!="ingredientFilter").OrderBy(f=>f.Name);
-            string result=string.Join("|",fields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
-            result+="|"+b.RenamableLabel+"|"+b.GetStoreMode().defName+"|"+Value(b.GetSlotGroup())+"|"+Value(b.GetIncludeSlotGroup());
-            result+="|"+string.Join(",",b.ingredientFilter.AllowedThingDefs.Select(d=>d.defName).OrderBy(n=>n));
-            foreach(FieldInfo f in typeof(ThingFilter).GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Where(f=>f.Name=="disallowedSpecialFilters"||f.Name=="allowedHitPointsPercents"||f.Name=="allowedQualities"))
+            var thread=System.Threading.Thread.CurrentThread;var culture=thread.CurrentCulture;
+            try
+            {
+                thread.CurrentCulture=System.Globalization.CultureInfo.InvariantCulture;
+                string result=ManagedBillPolicy.Version+string.Join("|",OwnedFields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
+                result+="|restriction="+Value(b.PawnRestriction)+","+b.SlavesOnly+","+b.MechsOnly+","+b.NonMechsOnly;
+                return result+"|"+Settings(b,StringComparer.Ordinal);
+            }
+            finally{thread.CurrentCulture=culture;}
+        }
+        // Owned-settings comparison. A 1.1.0 entry (no version prefix) is compared with the
+        // same legacy algorithm after removing its progress and position tokens.
+        public static bool MatchesSettings(string saved,Bill_Production b)
+        {
+            if(string.IsNullOrEmpty(saved))return false;
+            if(saved.StartsWith(ManagedBillPolicy.Version,StringComparison.Ordinal))return saved==Fingerprint(b);
+            return ManagedBillPolicy.NormalizeLegacy(saved)==ManagedBillPolicy.NormalizeLegacy(LegacyFingerprint(b));
+        }
+        // Exactly the 1.1.0 algorithm (current culture, default ordering).
+        static string LegacyFingerprint(Bill_Production b)
+        {
+            if(legacyFields==null)legacyFields=typeof(Bill_Production).GetFields(BindingFlags.Public|BindingFlags.Instance)
+                .Where(f=>f.Name!="billStack"&&f.Name!="loadID"&&f.Name!="nextTickToSearchForIngredients"&&f.Name!="ingredientFilter").OrderBy(f=>f.Name).ToArray();
+            string result=string.Join("|",legacyFields.Select(f=>f.Name+"="+Value(f.GetValue(b))));
+            return result+"|"+Settings(b,StringComparer.CurrentCulture)+"|index="+b.billStack.IndexOf(b);
+        }
+        static string Settings(Bill_Production b,StringComparer order)
+        {
+            string result=b.RenamableLabel+"|"+b.GetStoreMode().defName+"|"+Value(b.GetSlotGroup())+"|"+Value(b.GetIncludeSlotGroup());
+            result+="|"+string.Join(",",b.ingredientFilter.AllowedThingDefs.Select(d=>d.defName).OrderBy(n=>n,order));
+            foreach(FieldInfo f in FilterFields)
             {
                 var sequence=f.GetValue(b.ingredientFilter) as System.Collections.IEnumerable;
-                result+="|"+f.Name+"="+(sequence==null?Value(f.GetValue(b.ingredientFilter)):string.Join(",",sequence.Cast<object>().Select(Value).OrderBy(n=>n)));
+                result+="|"+f.Name+"="+(sequence==null?Value(f.GetValue(b.ingredientFilter)):string.Join(",",sequence.Cast<object>().Select(Value).OrderBy(n=>n,order)));
             }
-            return result+"|index="+b.billStack.IndexOf(b);
+            return result;
         }
         public static string PermissionKey(Building_WorkTable bench,FeedAnchor anchor)
         {return bench.ThingID+"@"+bench.Position+"/"+anchor.Stack.ThingID+"@"+anchor.Stack.Position;}
@@ -110,28 +146,63 @@ namespace Pengin.AnimalManagement
             }
             if(double.IsInfinity(outputNutrition))return p;
             var producedFeed=new FeedCandidate(outputNutrition,outputAccess,anchor.Candidate.FreshDays);
-            var debits=new Dictionary<int,double>();
-            // Vanilla may select another stack of the permitted def. Debit the worst-case
-            // amount from EVERY reachable pool, not merely the displayed ingredient stacks.
-            foreach(var def in permitted)
-            {
-                if(recipe.ingredients.Count(i=>i.filter.Allows(def))!=1)return p;
-                int count=p.Ingredients.Where(c=>c.Key.def==def).Sum(c=>c.Value);
-                foreach(var group in snap.Materials.Where(c=>c.Key.def==def).GroupBy(c=>c.Value.Pool))
-                {
-                    double total=group.Sum(c=>c.Key.stackCount*c.Value.PerItem);
-                    debits[group.Key]=Math.Min(total,count*group.Max(c=>c.Value.PerItem));
-                }
-            }
+            var debit=BoundIngredientRemoval(snap,recipe,permitted,p.Batches);
+            if(debit==null)return p;
+            if(debit.Blocked!=null){p.Blocked=debit.Blocked;return p;}
             // Ingredients are consumed by production: prove net benefit with the SAME allocation.
             var beforeProjection=snap.Scenario.Run(plan.Horizon,0,0);
-            var after=snap.Scenario.Convert(plan.Horizon,producedFeed,p.Items,debits);
+            var after=snap.Scenario.Convert(plan.Horizon,producedFeed,p.Items,debit);
             if(snap.Scenario.AnimalDeficit(after)>=snap.Scenario.AnimalDeficit(beforeProjection)-1e-6||
                 snap.Scenario.HumanDeficit(after)>snap.Scenario.HumanDeficit(beforeProjection)+1e-6)return p;
-            var withoutOutput=snap.Scenario.Convert(plan.Horizon,producedFeed,0,debits);
+            var withoutOutput=snap.Scenario.Convert(plan.Horizon,producedFeed,0,debit);
             p.DelaySafe=snap.Scenario.HumanDeficit(withoutOutput)<=snap.Scenario.HumanDeficit(beforeProjection)+1e-6&&
                 snap.Scenario.AnimalDeficit(withoutOutput)<=snap.Scenario.AnimalDeficit(beforeProjection)+1e-6;
             p.Blocked=null;return p;
+        }
+        // Vanilla does not use the previewed stacks. With allowMixingIngredients it gathers, per
+        // batch and ingredient, ANY reachable unforbidden stacks of every def the bill allows,
+        // ordered by nutrition value then distance, until the base count is met; the last stack
+        // overshoots by less than one unit (WorkGiver_DoBill.TryFindBestBillIngredientsInSet_AllowMix,
+        // RimWorld 1.7.4985). Bound that removal for every candidate stack in the forecast and
+        // let IngredientDebit refuse any choice it cannot pin to one pool. Null = unprovable.
+        static MaterialDebit BoundIngredientRemoval(ForecastSnapshot snap,RecipeDef recipe,HashSet<ThingDef> permitted,int batches)
+        {
+            var getter=recipe.IngredientValueGetter;if(getter==null)return null;
+            var demands=new List<IngredientDemand>();var owner=new Dictionary<ThingDef,int>();
+            var unit=new Dictionary<ThingDef,double>();var maxUnit=new List<double>();
+            for(int i=0;i<recipe.ingredients.Count;i++)
+            {
+                var ingredient=recipe.ingredients[i];
+                // A fixed ingredient ignores the bill's filter; any other uses only allowed defs.
+                var defs=ingredient.IsFixedIngredient?new List<ThingDef>{ingredient.FixedIngredient}:permitted.Where(d=>ingredient.filter.Allows(d)).ToList();
+                double largest=0;
+                foreach(var def in defs)
+                {
+                    // A def satisfying two ingredients could be drawn by either: not bounded.
+                    if(def==null||recipe.ingredients.Count(x=>x.filter.Allows(def))!=1||owner.ContainsKey(def))return null;
+                    double value=getter.ValuePerUnitOf(def);
+                    if(double.IsNaN(value)||double.IsInfinity(value)||value<=0)return null;
+                    owner[def]=i;unit[def]=value;largest=Math.Max(largest,value);
+                }
+                demands.Add(new IngredientDemand());maxUnit.Add(largest);
+            }
+            var ratio=new double[demands.Count];
+            foreach(var entry in snap.Materials)
+            {
+                int i;if(!owner.TryGetValue(entry.Key.def,out i))continue;
+                if(entry.Value.Count<=0)continue;
+                ratio[i]=Math.Max(ratio[i],entry.Value.PerItem/unit[entry.Key.def]);
+                demands[i].Sources.Add(new IngredientSource(entry.Value.Pool,entry.Value.Count*entry.Value.PerItem));
+            }
+            for(int i=0;i<demands.Count;i++)
+            {
+                double baseCount=recipe.ingredients[i].GetBaseCount();
+                if(double.IsNaN(baseCount)||double.IsInfinity(baseCount)||baseCount<0)return null;
+                // Stat units removed per batch < base + largest unit; forecast units scale by
+                // at most the largest per-stack forecast/stat ratio.
+                demands[i].MaxRemoval=batches*(baseCount+maxUnit[i])*ratio[i];
+            }
+            return snap.Scenario.Debit(demands);
         }
         public static bool Execute(Map map,FeedProductionPreview shown,bool automatic)
         {
@@ -153,7 +224,7 @@ namespace Pengin.AnimalManagement
             bill.SetIncludeGroup(anchor.Stack.GetSlotGroup());
             bill.SetStoreMode(BillStoreModeDefOf.SpecificStockpile,anchor.Stack.GetSlotGroup());
             next.Bench.BillStack.AddBill(bill);
-            state.Managed.Add(new ManagedFeedBill{Bench=next.Bench,BillId=bill.GetUniqueLoadID(),Fingerprint=Fingerprint(bill),Expires=now+60000,Automatic=automatic,Permission=PermissionKey(shown.Bench,anchor)});
+            state.Managed.Add(new ManagedFeedBill{Bench=next.Bench,BillId=bill.GetUniqueLoadID(),Fingerprint=Fingerprint(bill),Expires=now+60000,Automatic=automatic,Permission=PermissionKey(shown.Bench,anchor),Batches=next.Batches,LastSeen=bill.repeatCount});
             state.LastAction=now;state.AddHistory(next.Bench.ThingID+" / "+bill.GetUniqueLoadID()+" / "+next.Items);
             return true;
         }

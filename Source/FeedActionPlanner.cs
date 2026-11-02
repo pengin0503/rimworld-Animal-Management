@@ -30,7 +30,14 @@ namespace Pengin.AnimalManagement
             var scaled=demands.Select((d,i)=>new Demand{Human=d.Human,Daily=d.Daily*(factors==null?1:factors[i])}).ToArray();
             return NutritionForecast.Run(scaled,pools,d=>growth[d-1],days,births,deaths);
         }
-        public Projection Convert(int days,FeedCandidate output,int items,System.Collections.Generic.IDictionary<int,double> debits)
+        // Bound every ingredient removal vanilla may choose against this snapshot's stock.
+        public MaterialDebit Debit(IList<IngredientDemand> ingredients){return IngredientDebit.Build(stock,ingredients);}
+        public Projection Convert(int days,FeedCandidate output,int items,MaterialDebit debit)
+        {
+            if(debit==null||debit.Blocked!=null)throw new ArgumentException("Unbounded material debit");
+            return Convert(days,output,items,debit.Debits);
+        }
+        public Projection Convert(int days,FeedCandidate output,int items,IDictionary<int,double> debits)
         {
             var pools=stock.Select(Copy).ToList();
             foreach(var debit in debits)

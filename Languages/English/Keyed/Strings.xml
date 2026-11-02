@@ -74,6 +74,8 @@
   <AM_Cooldown>Action cooldown: {0} days</AM_Cooldown>
   <AM_ProductionBlocked>Production blocked: a complete reliable forecast, safe vanilla recipe/bench, accessible permitted ingredients, storage and a proven net nutrition benefit are required.</AM_ProductionBlocked>
   <AM_DuplicateBill>An existing bill already uses this recipe. It will not be changed or duplicated.</AM_DuplicateBill>
+  <AM_IngredientPools>Production blocked: an ingredient's permitted stacks lie in food groups with different access or spoilage, so the ingredients vanilla will actually pick cannot be proved safe for colonists and animals.</AM_IngredientPools>
+  <AM_IngredientUnbounded>Production blocked: the ingredient consumption could not be bounded from the forecast (unsupported recipe or ingredient values).</AM_IngredientUnbounded>
   <AM_HayArea>Illustrative full harvest: {0} cells; base growth {1} days. Does not account for local growing hours, fertility, losses or cold; not a guaranteed field size.</AM_HayArea>
   <AM_BenchChoice>Workbench: {0} (click to change)</AM_BenchChoice>
   <AM_PreviewProduction>Check ingredients and preview production</AM_PreviewProduction>
@@ -103,4 +105,13 @@
   <AM_AutoNoAnchor>No verified destination for feed</AM_AutoNoAnchor>
   <AM_AutoNoSafeAction>No permitted safe production action</AM_AutoNoSafeAction>
   <AM_AutoCreated>Feed production instruction created</AM_AutoCreated>
+  <AM_BillStopping>current batch still in progress; new batches stopped, bill removed when its job ends</AM_BillStopping>
+  <AM_BillCompleted>production finished; bill removed, next replenishment allowed</AM_BillCompleted>
+  <AM_BillExpired>one-day assistance window ended; unchanged bill removed, next replenishment allowed</AM_BillExpired>
+  <AM_BillWithdrawn>mode, permission or reliable forecast no longer authorizes it; bill removed</AM_BillWithdrawn>
+  <AM_BillBenchLost>bench gone or moved; bill left untouched</AM_BillBenchLost>
+  <AM_BillManualEdit>bill settings or count changed outside this mod; left untouched, bench automation stopped until allowed again</AM_BillManualEdit>
+  <AM_BillUnverified>repeat count changed without an observed finished batch; treated as manual, bench automation stopped until allowed again</AM_BillUnverified>
+  <AM_BillSuspended>bill suspended outside this mod; left untouched, bench automation stopped until allowed again</AM_BillSuspended>
+  <AM_BillMissing>bill deleted outside this mod; bench automation stopped until allowed again</AM_BillMissing>
 </LanguageData>
