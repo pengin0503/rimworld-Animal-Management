@@ -15,6 +15,7 @@ namespace Pengin.AnimalManagement
         int speciesIndex;
         ThingDef capacitySpecies;
         ForecastSnapshot capacitySource;
+        int hypotheticalChoice;
         FeedActionPlan hypotheticalPlan;
         ThingDef hypotheticalDef;
         ForecastSnapshot hypotheticalSource;
@@ -36,16 +37,22 @@ namespace Pengin.AnimalManagement
                 // A missing anchor is not grounds for hiding the independent herd plan.
                 // A diet-only scenario is advisory: location and accessibility are unknown.
                 list.Label("AM_NoAnchor".Translate());
-                if(settings.SolutionsMode!=ActionMode.Off&&list.ButtonText("AM_CalculatePlan".Translate()))
+                if(settings.SolutionsMode!=ActionMode.Off)
                 {
-                    var def=DefDatabase<ThingDef>.GetNamedSilentFail("Hay")??DefDatabase<ThingDef>.GetNamedSilentFail("Kibble");
-                    if(def!=null&&def.statBases!=null)
+                    var options=new[]{"Hay","Kibble"}.Select(name=>DefDatabase<ThingDef>.GetNamedSilentFail(name))
+                        .Where(def=>def!=null&&def.statBases!=null&&def.statBases.Any(s=>s.stat==StatDefOf.Nutrition&&s.value>0)).ToArray();
+                    if(options.Length>0)
                     {
-                        var nutrition=def.statBases.FirstOrDefault(s=>s.stat==StatDefOf.Nutrition);
-                        if(nutrition!=null&&nutrition.value>0&&snapshot.Consumers!=null)
+                        hypotheticalChoice=Math.Min(hypotheticalChoice,options.Length-1);
+                        var def=options[hypotheticalChoice];
+                        if(list.ButtonText("AM_FeedChoice".Translate(def.LabelCap)))
+                        {hypotheticalChoice=(hypotheticalChoice+1)%options.Length;hypotheticalPlan=null;}
+                        def=options[hypotheticalChoice];
+                        if(list.ButtonText("AM_CalculatePlan".Translate())&&snapshot.Consumers!=null)
                         {
+                            var nutrition=def.statBases.First(s=>s.stat==StatDefOf.Nutrition).value;
                             var access=snapshot.Consumers.Select(p=>p.RaceProps.CanEverEat(def)&&FoodUtility.WillEat(p,def,p)).ToArray();
-                            var candidate=new FeedCandidate(nutrition.value,access,int.MaxValue);
+                            var candidate=new FeedCandidate(nutrition,access,int.MaxValue);
                             hypotheticalPlan=FeedActionPlanner.Plan(snapshot.Scenario,candidate,settings.TargetDays,
                                 settings.PopulationScenario?settings.Births:0,settings.PopulationScenario?settings.Deaths:0,100000);
                             hypotheticalDef=def;hypotheticalSource=snapshot;hypotheticalDays=settings.TargetDays;
@@ -85,7 +92,11 @@ namespace Pengin.AnimalManagement
             if(state!=null&&state.History.Count>0)
             {
                 list.GapLine();list.Label("AM_ActionHistory".Translate());
-                foreach(string entry in state.History)list.Label(entry);
+                foreach(string entry in state.History)
+                {
+                    int reason=entry.IndexOf("auto status: AM_",StringComparison.Ordinal);
+                    list.Label(reason<0?entry:entry.Substring(0,reason)+"auto status: "+entry.Substring(reason+13).Translate());
+                }
                 if(settings.ProductionMode==ActionMode.Auto)list.Label("AM_LastAutoStatus".Translate(state.LastAutoReason.Translate()));
             }
         }
