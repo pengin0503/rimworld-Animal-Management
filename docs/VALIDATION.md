@@ -163,3 +163,13 @@ Review follow-up (PR #16):
 - Real-game fixture now compiles against public references in CI; this is compilation only, not Scribe execution.
 - Follow-up suite: 38 nutrition/planning assertions + 8 ownership assertions + 4 herd scenarios.
 - Prospective kibble ingredient restrictions are checked with a real unspawned product and consumer-specific nutrition; nested/unknown ingredient histories block conversion. Standing forage also marks projections weather-dependent.
+
+
+## Review remediation (2026-11-02, branch: feat/remaining-review-fixes-20261102)
+- Scope: #19, #22, #23, #24, #26; #20 remains blocked by #25 and is not represented as fixed. #21/#25 intentionally excluded. Existing auto material-debit safety policy unchanged.
+- Regressions: unrelated hungry species capacity (RED on baseline; GREEN after change), shared-food non-worsening, 400-consumer access signatures and expiry separation (RED missing API; GREEN).
+- Feed-free map now exposes herd capacity and diet-only hypothetical feed quantity **without allowing automatic production**; production/real destination still require verified anchor.
+- CapacityMode is separately persisted with safe Confirm default; history and last Auto stop reason are shown.
+- Feed stack grouping uses value-type 400-consumer access keys and stores pool index rather than allocating a per-stack string and searching `stock.IndexOf`.
+- Public CI success: tests (8 ownership, 6 herd, 4 access-mask, 38 nutrition assertions), Release source and game-fixture **compile only**, metadata/translation validation and development ZIP. Example run: https://github.com/pengin0503/rimworld-Animal-Management/actions/runs/41384870683
+- **Not verified:** actual in-game render/save-load/production, real map GC/TPS before-after, 270+ MODs. Neither 6.10 ms pure-model fixture nor compilation proves gameplay performance. Retain #6, #20 and performance acceptance until evidence.
