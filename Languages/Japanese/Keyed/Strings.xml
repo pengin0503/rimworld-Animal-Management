@@ -72,4 +72,15 @@
   <AM_MaxItems>1回の操作個数上限：{0}</AM_MaxItems>
   <AM_MaxBills>マップごとの管理指示上限：{0}</AM_MaxBills>
   <AM_Cooldown>操作クールダウン：{0}日</AM_Cooldown>
+  <AM_ProductionBlocked>生産不可：完全で信頼できる予測、対応するバニラのレシピ・設備、到達可能な許可済み材料、保管先、材料消費を含めた栄養改善が必要です。</AM_ProductionBlocked>
+  <AM_DuplicateBill>同じレシピの既存指示があります。変更・重複作成しません。</AM_DuplicateBill>
+  <AM_HayArea>全量収穫の参考：{0}マス、基本成長{1}日。地域の成長時間・肥沃度・損失・低温を含まないため必要面積の保証ではありません。</AM_HayArea>
+  <AM_BenchChoice>設備：{0}（クリックで切替）</AM_BenchChoice>
+  <AM_PreviewProduction>材料を確認して生産プレビュー</AM_PreviewProduction>
+  <AM_ProductionPreview>{1}で最大{0}個分を生産。以下の材料を消費します。備蓄不足の全解消・完成時期は保証しません。指示の管理期限は1日です。</AM_ProductionPreview>
+  <AM_AllowTarget>この設備・配送先の自動操作を許可</AM_AllowTarget>
+  <AM_RevokeTarget>この設備・配送先の自動許可を解除</AM_RevokeTarget>
+  <AM_CreateProduction>製造指示を作成（確認）</AM_CreateProduction>
+  <AM_ProductionConfirm>{1}に最大{0}個分の管理指示を作成しますか？表示した材料を消費し、配送先を指定します。手動指示は変更しません。期限または目標達成で停止します。</AM_ProductionConfirm>
+  <AM_ActionChanged>条件が変化したか、操作上限・クールダウンに達しました。プレビューを更新してください。</AM_ActionChanged>
 </LanguageData>

@@ -30,6 +30,17 @@ namespace Pengin.AnimalManagement
             var scaled=demands.Select((d,i)=>new Demand{Human=d.Human,Daily=d.Daily*(factors==null?1:factors[i])}).ToArray();
             return NutritionForecast.Run(scaled,pools,d=>growth[d-1],days,births,deaths);
         }
+        public Projection Convert(int days,FeedCandidate output,int items,System.Collections.Generic.IDictionary<int,double> debits)
+        {
+            var pools=stock.Select(Copy).ToList();
+            foreach(var debit in debits)
+            {
+                if(debit.Key<0||debit.Key>=pools.Count||debit.Value<0||debit.Value>pools[debit.Key].Nutrition+1e-6)throw new ArgumentException("Invalid material debit");
+                pools[debit.Key].Nutrition=Math.Max(0,pools[debit.Key].Nutrition-debit.Value);
+            }
+            pools.Add(new FeedPool{Nutrition=output.Nutrition*items,Access=output.Access,LastFreshDay=output.FreshDays});
+            return NutritionForecast.Run(demands,pools,d=>growth[d-1],days,0,0);
+        }
         public double AnimalDeficit(Projection p) {return p.Unmet.Where((n,i)=>!demands[i].Human).Sum();}
         public double HumanDeficit(Projection p) {return p.Unmet.Where((n,i)=>demands[i].Human).Sum();}
     }

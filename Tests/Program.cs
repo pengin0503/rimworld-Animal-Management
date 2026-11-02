@@ -11,6 +11,7 @@ static class Program
     static List<FeedPool> None(int day) {return new List<FeedPool>();}
     static void Main()
     {
+        OwnershipTests.Run();
         var d=new List<Demand>{D(1),D(1)};
         var pools=new List<FeedPool>{F(10,true,true)};
         var r=NutritionForecast.Run(d,pools,None,7,0,0);
@@ -79,6 +80,11 @@ static class Program
             var winter=new FeedScenario(new[]{D(1)},new List<FeedPool>(),None,true);
             Check(FeedActionPlanner.Plan(winter,new FeedCandidate(.5,new[]{true},99),horizon,0,0,100).RequiredItems==horizon*2,"winter zero-growth target "+horizon);
         }
+        var conversion=new FeedScenario(new[]{D(1,true),D(1)},new[]{F(14,true,true)},None,true);
+        var converted=conversion.Convert(7,new FeedCandidate(1,new[]{true,true},99),7,new Dictionary<int,double>{{0,7}});
+        Check(conversion.HumanDeficit(converted)==0&&conversion.AnimalDeficit(converted)==0,"conversion debits ingredients before adding output");
+        Check(conversion.HumanDeficit(conversion.Convert(7,new FeedCandidate(1,new[]{false,true},99),7,new Dictionary<int,double>{{0,7}}))>0,"human diet change can make a conversion unsafe");
+        Check(conversion.Run(7,0,0).StockConsumed==14,"material debits preserve snapshot");
         var timer=System.Diagnostics.Stopwatch.StartNew();
         var many=new List<Demand>();for(int i=0;i<100;i++)many.Add(D(1));
         var access=new bool[100];Array.Fill(access,true);

@@ -46,6 +46,11 @@ namespace Pengin.AnimalManagement
         // Only settings that change the calculation; the warning threshold is applied on display.
         public string Signature {get{return IncludeForbidden+":"+PopulationScenario+":"+Births+":"+Deaths;}}
     }
+    public sealed class FeedMaterial
+    {
+        public int Pool;
+        public double PerItem;
+    }
     public sealed class FeedAnchor
     {
         public Thing Stack;
@@ -58,6 +63,7 @@ namespace Pengin.AnimalManagement
         public bool Partial;
         public string SettingsSignature;
         public FeedScenario Scenario;
+        public Dictionary<Thing,FeedMaterial> Materials=new Dictionary<Thing,FeedMaterial>();
         public List<Pawn> Consumers;
         public List<FeedAnchor> Anchors=new List<FeedAnchor>();
         public bool WeatherDependent;
@@ -254,6 +260,7 @@ namespace Pengin.AnimalManagement
                 if(!byAccess.TryGetValue(key,out pool))
                 {pool=new FeedPool{Access=access,LastFreshDay=expiry};byAccess[key]=pool;stock.Add(pool);}
                 pool.Nutrition+=perItem*item.stackCount;
+                result.Materials[item]=new FeedMaterial{Pool=stock.IndexOf(pool),PerItem=perItem};
                 result.FeedStacks++;result.StockNutrition+=perItem*item.stackCount;
             }
             result.AccessChecks=cache.Misses;
